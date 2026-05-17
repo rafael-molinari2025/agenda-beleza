@@ -7,6 +7,12 @@
       ".gitignore",
       "firestore.rules",
       "agenda-beleza.html",
+      "*.bat",
+      "*.sh",
+      "*.ps1",
+      "README.md",
+      ".git/**",
+      ".claude/**",
       "node_modules/**"
     ],
     "rewrites": [
