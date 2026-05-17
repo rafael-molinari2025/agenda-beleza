@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belle·Agenda · Painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F4;--surface:#FFFFFF;--ink:#2A1F2E;--ink-soft:#6B5B6E;--accent:#C9376C;--accent-soft:#F4D5DD;--gold:#B8956A;--sage:#8DA88E;--line:#EDE5E3;--shadow:0 4px 24px rgba(42,31,46,.06);--shadow-lg:0 12px 40px rgba(42,31,46,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;background-image:radial-gradient(circle at 15% 10%,rgba(244,213,221,.4) 0%,transparent 40%),radial-gradient(circle at 90% 90%,rgba(184,149,106,.08) 0%,transparent 40%)}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+aside{background:var(--surface);border-right:1px solid var(--line);padding:32px 22px;display:flex;flex-direction:column;gap:6px}
+@media(max-width:900px){aside{border-right:none;border-bottom:1px solid var(--line);padding:20px}}
+.brand{margin-bottom:30px;padding:0 8px}
+.brand h1{font-family:'DM Serif Display';font-size:26px;letter-spacing:-.5px;line-height:1}
+.brand h1 em{color:var(--accent);font-style:italic}
+.brand p{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
+.brand .user-email{font-size:11px;color:var(--ink-soft);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-item{padding:12px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;color:var(--ink-soft);transition:.2s;background:none;border:none;text-align:left;width:100%;font-family:inherit}
+.nav-item:hover{background:var(--bg);color:var(--ink)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.nav-spacer{flex:1}
+.nav-logout{color:#E85D5D !important}
+.nav-logout:hover{background:#FEE2E2 !important;color:#B91C1C !important}
+main{padding:36px 44px;overflow-x:hidden}
+@media(max-width:700px){main{padding:24px 20px}}
+.panel{display:none;animation:fadeIn .35s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:30px;flex-wrap:wrap;gap:20px}
+.page-title h2{font-family:'DM Serif Display';font-size:40px;letter-spacing:-1px;line-height:1.05}
+.page-title h2 em{color:var(--accent);font-style:italic}
+.page-title p{color:var(--ink-soft);font-size:14px;margin-top:8px}
+.btn{padding:11px 20px;border-radius:50px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:#A82959;transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,55,108,.3)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-pix{background:linear-gradient(135deg,#32BCAD,#1A9B8D);color:white}
+.btn-pix:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(50,188,173,.3)}
+.btn-wa{background:#25D366;color:white}
+.btn-wa:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,211,102,.3)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:32px}
+.stat-card{background:var(--surface);padding:24px;border-radius:18px;box-shadow:var(--shadow);border:1px solid var(--line);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent)}
+.stat-card.gold::before{background:var(--gold)}
+.stat-card.sage::before{background:var(--sage)}
+.stat-card .label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;font-weight:500}
+.stat-card .value{font-family:'DM Serif Display';font-size:38px;line-height:1;letter-spacing:-1px}
+.stat-card .sub{font-size:12px;color:var(--ink-soft);margin-top:6px}
+.grid-split{display:grid;grid-template-columns:1.4fr 1fr;gap:22px}
+@media(max-width:1100px){.grid-split{grid-template-columns:1fr}}
+.card{background:var(--surface);border-radius:18px;padding:26px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.card-title{font-family:'DM Serif Display';font-size:22px;margin-bottom:18px;letter-spacing:-.3px;display:flex;justify-content:space-between;align-items:center}
+.appt{display:flex;align-items:center;gap:16px;padding:14px;border-radius:12px;border:1px solid var(--line);margin-bottom:10px;transition:.2s}
+.appt:hover{border-color:var(--accent-soft);background:#FDF8FA}
+.appt-time{text-align:center;min-width:60px;padding:8px 10px;background:var(--accent-soft);color:var(--accent);border-radius:10px}
+.appt-time .h{font-family:'DM Serif Display';font-size:20px;line-height:1}
+.appt-time .d{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;font-weight:600}
+.appt-info{flex:1;min-width:0}
+.appt-info .name{font-weight:600;font-size:15px;margin-bottom:3px}
+.appt-info .svc{font-size:12px;color:var(--ink-soft)}
+.appt-info .svc strong{color:var(--gold);font-weight:600}
+.appt-actions{display:flex;gap:6px;flex-wrap:wrap}
+.icon-btn{background:none;border:1px solid var(--line);width:32px;height:32px;border-radius:50%;cursor:pointer;display:grid;place-items:center;transition:.2s;color:var(--ink-soft);font-size:14px}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn.wa:hover{border-color:#25D366;color:#25D366}
+.icon-btn.pix:hover{border-color:#32BCAD;color:#32BCAD}
+.icon-btn.del:hover{border-color:#E85D5D;color:#E85D5D}
+.field{margin-bottom:16px}
+label{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;font-weight:600}
+input,select,textarea{width:100%;padding:12px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;font-family:inherit;font-size:14px;transition:.2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+textarea{resize:vertical;min-height:80px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:600px){.field-row,.field-row-3{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:14px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--line);font-weight:600}
+td{padding:14px;border-bottom:1px solid var(--line);font-size:14px}
+tr:hover td{background:var(--bg)}
+.tag{display:inline-block;padding:4px 10px;border-radius:50px;font-size:11px;font-weight:600;background:var(--accent-soft);color:var(--accent)}
+.tag.gold{background:rgba(184,149,106,.15);color:var(--gold)}
+.tag.sage{background:rgba(141,168,142,.15);color:var(--sage)}
+.tag.pix{background:rgba(50,188,173,.12);color:#1A9B8D}
+.modal-bg{position:fixed;inset:0;background:rgba(42,31,46,.5);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-bg.show{display:flex;animation:fadeIn .25s}
+.modal{background:var(--surface);border-radius:22px;padding:36px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal h3{font-family:'DM Serif Display';font-size:28px;letter-spacing:-.5px;margin-bottom:24px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.cal-month{font-family:'DM Serif Display';font-size:24px;letter-spacing:-.3px;text-transform:capitalize}
+.cal-nav{display:flex;gap:6px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-dow{text-align:center;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft);padding:8px 0;font-weight:600}
+.cal-day{aspect-ratio:1;display:grid;place-items:center;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;transition:.2s;border:1px solid transparent;position:relative}
+.cal-day:hover{background:var(--bg)}
+.cal-day.muted{color:var(--line)}
+.cal-day.today{border-color:var(--accent);color:var(--accent);font-weight:700}
+.cal-day.selected{background:var(--accent);color:white;font-weight:700}
+.cal-day.has-appt::after{content:'';position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.cal-day.selected.has-appt::after{background:white}
+.empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft)}
+.empty-state svg{margin:0 auto 16px;opacity:.4}
+.empty-state h4{font-family:'DM Serif Display';font-size:22px;margin-bottom:8px;color:var(--ink)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:14px 22px;border-radius:50px;font-size:13px;font-weight:500;transform:translateY(120%);transition:.4s;z-index:100;box-shadow:var(--shadow-lg)}
+.toast.show{transform:translateY(0)}
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.chip{padding:8px 16px;background:var(--surface);border:1px solid var(--line);border-radius:50px;cursor:pointer;font-size:12px;font-weight:600;transition:.2s}
+.chip:hover{border-color:var(--accent)}
+.chip.active{background:var(--ink);color:white;border-color:var(--ink)}
+/* PIX modal */
+.pix-qr{text-align:center;padding:24px 0}
+.pix-qr canvas{border-radius:12px;border:2px solid var(--line)}
+.pix-amount{font-family:'DM Serif Display';font-size:32px;color:var(--accent);margin-bottom:6px}
+.pix-label{font-size:12px;color:var(--ink-soft);margin-bottom:20px}
+.pix-code-box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:11px;word-break:break-all;font-family:monospace;margin-top:16px;cursor:pointer;transition:.2s}
+.pix-code-box:hover{border-color:var(--accent)}
+.pix-no-key{background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;padding:14px;font-size:13px;color:#92400E;margin-bottom:16px}
+/* Settings */
+.settings-section{margin-bottom:32px}
+.settings-section h4{font-family:'DM Serif Display';font-size:20px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+/* Loading overlay */
+#loadingOverlay{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:200;transition:opacity .4s}
+#loadingOverlay.hidden{opacity:0;pointer-events:none}
+.spinner{width:48px;height:48px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay"><div class="spinner"></div></div>
+
+<div class="layout">
+  <aside>
+    <div class="brand">
+      <h1>Belle<em>·</em>Agenda</h1>
+      <p id="salonLabel">Beleza & Saúde · v2.0</p>
+      <div class="user-email" id="userEmailLabel"></div>
+    </div>
+    <button class="nav-item active" data-panel="dash">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Painel
+    </button>
+    <button class="nav-item" data-panel="cal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Agenda
+    </button>
+    <button class="nav-item" data-panel="clients">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clientes
+    </button>
+    <button class="nav-item" data-panel="services">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+      Serviços
+    </button>
+    <button class="nav-item" data-panel="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Relatórios
+    </button>
+    <button class="nav-item" data-panel="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configurações
+    </button>
+    <div class="nav-spacer"></div>
+    <button class="nav-item nav-logout" onclick="doLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair
+    </button>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="panel active" id="dash">
+      <div class="page-head">
+        <div class="page-title">
+          <h2>Bom dia, <em id="greetName">profissional</em></h2>
+          <p>Aqui está o resumo do seu dia <span id="todayDate"></span></p>
+        </div>
+        <button class="btn btn-primary" onclick="openAppt()">+ Novo agendamento</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Hoje</div><div class="value" id="dashToday">0</div><div class="sub">agendamentos</div></div>
+        <div class="stat-card gold"><div class="label">Esta semana</div><div class="value" id="dashWeek">0</div><div class="sub">atendimentos</div></div>
+        <div class="stat-card sage"><div class="label">Faturamento previsto</div><div class="value" id="dashRev">R$ 0</div><div class="sub">no mês</div></div>
+        <div class="stat-card"><div class="label">Clientes ativos</div><div class="value" id="dashClients">0</div><div class="sub">cadastrados</div></div>
+      </div>
+      <div class="grid-split">
+        <div class="card">
+          <div class="card-title">Próximos atendimentos <button class="btn btn-ghost btn-sm" onclick="goTo('cal')">Ver agenda →</button></div>
+          <div id="upcomingList"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Aniversariantes do mês</div>
+          <div id="bdayList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="panel" id="cal">
+      <div class="page-head">
+        <div class="page-title">
+          <h2>Sua <em>agenda</em></h2>
+          <p>Visualize e gerencie todos os agendamentos</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAppt()">+ Novo agendamento</button>
+      </div>
+      <div class="grid-split">
+        <div class="card">
+          <div class="cal-head">
+            <div class="cal-month" id="calMonth"></div>
+            <div class="cal-nav">
+              <button class="icon-btn" onclick="changeMonth(-1)">‹</button>
+              <button class="icon-btn" onclick="goToday()">•</button>
+              <button class="icon-btn" onclick="changeMonth(1)">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" id="dayTitle">Selecione um dia</div>
+          <div id="dayAppts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section class="panel" id="clients">
+      <div class="page-head">
+        <div class="page-title">
+          <h2>Seus <em>clientes</em></h2>
+          <p>Base completa com histórico de atendimentos</p>
+        </div>
+        <button class="btn btn-primary" onclick="openClient()">+ Novo cliente</button>
+      </div>
+      <div class="card">
+        <input type="text" id="clientSearch" placeholder="Buscar por nome ou telefone..." style="margin-bottom:18px" oninput="renderClients()">
+        <div id="clientsTable"></div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="panel" id="services">
+      <div class="page-head">
+        <div class="page-title">
+          <h2>Seus <em>serviços</em></h2>
+          <p>Cadastre o que você oferece, preços e duração</p>
+        </div>
+        <button class="btn btn-primary" onclick="openService()">+ Novo serviço</button>
+      </div>
+      <div class="card"><div id="servicesTable"></div></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="panel" id="reports">
+      <div class="page-head">
+        <div class="page-title">
+          <h2>Seus <em>relatórios</em></h2>
+          <p>Entenda seu negócio com dados</p>
+        </div>
+        <button class="btn btn-ghost" onclick="exportData()">↓ Backup dos dados</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Faturamento total</div><div class="value" id="repTotal">R$ 0</div><div class="sub">todos os atendimentos</div></div>
+        <div class="stat-card gold"><div class="label">Ticket médio</div><div class="value" id="repAvg">R$ 0</div><div class="sub">por atendimento</div></div>
+        <div class="stat-card sage"><div class="label">Serviço mais popular</div><div class="value" id="repTop" style="font-size:22px">—</div><div class="sub" id="repTopCount">0 atendimentos</div></div>
+      </div>
+      <div class="card"><div class="card-title">Atendimentos por mês</div><div id="monthlyChart"></div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="panel" id="settings">
+      <div class="page-head">
+        <div class="page-title">
+          <h2>Suas <em>configurações</em></h2>
+          <p>Personalize o sistema para seu negócio</p>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Salvar configurações</button>
+      </div>
+      <div class="card">
+        <div class="settings-section">
+          <h4>Dados do estabelecimento</h4>
+          <div class="field-row">
+            <div class="field"><label>Nome do salão / profissional</label><input id="cfgSalon" placeholder="Studio Silva"></div>
+            <div class="field"><label>Nome do profissional (saudação)</label><input id="cfgProf" placeholder="Maria"></div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>Pagamento PIX</h4>
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Configure para gerar QR Codes de pagamento automaticamente ao criar agendamentos.</p>
+          <div class="field"><label>Chave PIX (CPF, CNPJ, e-mail, telefone ou aleatória)</label><input id="cfgPixKey" placeholder="11999999999"></div>
+          <div class="field-row">
+            <div class="field"><label>Nome do recebedor (máx. 25 caracteres)</label><input id="cfgPixName" maxlength="25" placeholder="Maria Silva"></div>
+            <div class="field"><label>Cidade (máx. 15 caracteres)</label><input id="cfgPixCity" maxlength="15" placeholder="São Paulo"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="apptModal">
+  <div class="modal">
+    <h3 id="apptTitle">Novo agendamento</h3>
+    <div class="field"><label>Cliente</label><select id="apptClient"></select></div>
+    <div class="field"><label>Serviço</label><select id="apptService"></select></div>
+    <div class="field-row">
+      <div class="field"><label>Data</label><input type="date" id="apptDate"></div>
+      <div class="field"><label>Hora</label><input type="time" id="apptTime"></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea id="apptNotes" placeholder="Preferências, alergias, anotações..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('apptModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveAppt()">Salvar agendamento</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="clientModal">
+  <div class="modal">
+    <h3 id="clientTitle">Novo cliente</h3>
+    <div class="field"><label>Nome completo</label><input id="cliName" placeholder="Maria da Silva"></div>
+    <div class="field-row">
+      <div class="field"><label>Telefone / WhatsApp</label><input id="cliPhone" placeholder="31999999999"></div>
+      <div class="field"><label>Aniversário</label><input type="date" id="cliBday"></div>
+    </div>
+    <div class="field"><label>Email (opcional)</label><input id="cliEmail" type="email"></div>
+    <div class="field"><label>Anotações</label><textarea id="cliNotes" placeholder="Tipo de cabelo, alergias, preferências..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('clientModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveClient()">Salvar cliente</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="serviceModal">
+  <div class="modal">
+    <h3 id="serviceTitle">Novo serviço</h3>
+    <div class="field"><label>Nome do serviço</label><input id="svcName" placeholder="Corte + Escova"></div>
+    <div class="field-row-3">
+      <div class="field"><label>Preço (R$)</label><input id="svcPrice" type="number" step="0.01" placeholder="80"></div>
+      <div class="field"><label>Duração (min)</label><input id="svcDur" type="number" placeholder="60"></div>
+      <div class="field"><label>Comissão (%)</label><input id="svcComm" type="number" placeholder="40"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('serviceModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveService()">Salvar serviço</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIX MODAL -->
+<div class="modal-bg" id="pixModal">
+  <div class="modal">
+    <h3>Cobrança PIX</h3>
+    <div id="pixContent">
+      <div class="pix-qr">
+        <div class="pix-amount" id="pixAmount"></div>
+        <div class="pix-label" id="pixLabel"></div>
+        <canvas id="pixCanvas"></canvas>
+        <div class="pix-code-box" id="pixCodeBox" onclick="copyPix()" title="Clique para copiar"></div>
+        <p style="font-size:11px;color:var(--ink-soft);margin-top:8px">Clique no código para copiar</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('pixModal')">Fechar</button>
+      <button class="btn btn-wa" id="pixWaBtn" onclick="sendWaFromPix()">Enviar WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+// ============ FIREBASE ============
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let uid = null;
+let pixApptId = null;
+
+// ============ STATE ============
+let state = { clients: [], services: [], appts: [] };
+let settings = { salonName: 'Belle·Agenda', professionalName: 'profissional', pixKey: '', pixName: '', pixCity: '' };
+let editingId = { appt: null, client: null, service: null };
+let calDate = new Date();
+let selectedDay = new Date().toISOString().split('T')[0];
+
+// ============ AUTH GUARD ============
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  uid = user.uid;
+  document.getElementById('userEmailLabel').textContent = user.email;
+  await loadFromFirestore();
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  renderAll();
+});
+
+function userCol(col) { return db.collection('users').doc(uid).collection(col); }
+
+async function loadFromFirestore() {
+  const [clients, services, appts, cfg] = await Promise.all([
+    userCol('clients').orderBy('createdAt').get(),
+    userCol('services').orderBy('createdAt').get(),
+    userCol('appts').orderBy('date').get(),
+    userCol('settings').doc('profile').get()
+  ]);
+  state.clients = clients.docs.map(d => ({ id: d.id, ...d.data() }));
+  state.services = services.docs.map(d => ({ id: d.id, ...d.data() }));
+  state.appts = appts.docs.map(d => ({ id: d.id, ...d.data() }));
+  if (cfg.exists) {
+    settings = { ...settings, ...cfg.data() };
+    loadSettingsUI();
+    applySettings();
+  }
+}
+
+// ============ HELPERS ============
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+function brl(n) { return 'R$ ' + (+n || 0).toFixed(2).replace('.', ','); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.onclick = e => { if (e.target === m) closeModal(m.id); };
+});
+
+// ============ NAV ============
+document.querySelectorAll('.nav-item[data-panel]').forEach(b => {
+  b.onclick = () => goTo(b.dataset.panel);
+});
+function goTo(id) {
+  document.querySelectorAll('.nav-item[data-panel]').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  document.querySelector(`.nav-item[data-panel="${id}"]`).classList.add('active');
+  document.getElementById(id).classList.add('active');
+  renderAll();
+}
+
+async function doLogout() {
+  await auth.signOut();
+  window.location.href = 'login.html';
+}
+
+// ============ SETTINGS ============
+function loadSettingsUI() {
+  document.getElementById('cfgSalon').value = settings.salonName || '';
+  document.getElementById('cfgProf').value = settings.professionalName || '';
+  document.getElementById('cfgPixKey').value = settings.pixKey || '';
+  document.getElementById('cfgPixName').value = settings.pixName || '';
+  document.getElementById('cfgPixCity').value = settings.pixCity || '';
+}
+function applySettings() {
+  document.getElementById('salonLabel').textContent = (settings.salonName || 'Belle·Agenda') + ' · v2.0';
+  document.getElementById('greetName').textContent = settings.professionalName || 'profissional';
+}
+async function saveSettings() {
+  settings.salonName = document.getElementById('cfgSalon').value.trim() || 'Belle·Agenda';
+  settings.professionalName = document.getElementById('cfgProf').value.trim() || 'profissional';
+  settings.pixKey = document.getElementById('cfgPixKey').value.trim();
+  settings.pixName = document.getElementById('cfgPixName').value.trim().substring(0, 25);
+  settings.pixCity = document.getElementById('cfgPixCity').value.trim().substring(0, 15);
+  await userCol('settings').doc('profile').set(settings);
+  applySettings();
+  toast('Configurações salvas ✓');
+}
+
+// ============ PIX PAYLOAD (EMV/BACEN) ============
+function pixField(id, val) {
+  const len = val.length.toString().padStart(2, '0');
+  return `${id}${len}${val}`;
+}
+function crc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+    }
+  }
+  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+}
+function buildPixPayload(pixKey, name, city, amount) {
+  const gui = pixField('00', 'br.gov.bcb.pix') + pixField('01', pixKey);
+  const txid = 'AGENDA' + Date.now().toString().slice(-8);
+  const addData = pixField('05', txid.substring(0, 25));
+  let p = '';
+  p += pixField('00', '01');
+  p += pixField('26', gui);
+  p += pixField('52', '0000');
+  p += pixField('53', '986');
+  if (amount > 0) p += pixField('54', amount.toFixed(2));
+  p += pixField('58', 'BR');
+  p += pixField('59', (name || 'Profissional').substring(0, 25));
+  p += pixField('60', (city || 'Cidade').substring(0, 15));
+  p += pixField('62', addData);
+  p += '6304';
+  return p + crc16(p);
+}
+
+// ============ PIX MODAL ============
+function openPixModal(apptId) {
+  pixApptId = apptId;
+  const a = state.appts.find(x => x.id === apptId);
+  const s = state.services.find(x => x.id === a.serviceId);
+  const c = state.clients.find(x => x.id === a.clientId);
+  if (!s || !c) return;
+
+  document.getElementById('pixAmount').textContent = brl(s.price);
+  document.getElementById('pixLabel').textContent = `${escapeHtml(s.name)} · ${escapeHtml(c.name)}`;
+
+  const content = document.getElementById('pixContent');
+
+  if (!settings.pixKey) {
+    content.innerHTML = `<div class="pix-no-key">⚠️ Chave PIX não configurada. Acesse <strong>Configurações</strong> e informe sua chave PIX para gerar QR Codes.</div>`;
+    document.getElementById('pixModal').classList.add('show');
+    return;
+  }
+
+  content.innerHTML = `<div class="pix-qr">
+    <div class="pix-amount">${brl(s.price)}</div>
+    <div class="pix-label">${escapeHtml(s.name)} · ${escapeHtml(c.name)}</div>
+    <canvas id="pixCanvas"></canvas>
+    <div class="pix-code-box" id="pixCodeBox" onclick="copyPix()" title="Clique para copiar">Gerando...</div>
+    <p style="font-size:11px;color:var(--ink-soft);margin-top:8px">Clique no código para copiar</p>
+  </div>`;
+
+  const payload = buildPixPayload(settings.pixKey, settings.pixName, settings.pixCity, s.price);
+  document.getElementById('pixCodeBox').textContent = payload;
+
+  QRCode.toCanvas(document.getElementById('pixCanvas'), payload, { width: 220, margin: 2 }, err => {
+    if (err) document.getElementById('pixCanvas').insertAdjacentHTML('afterend', '<p style="color:red;font-size:12px">Erro ao gerar QR Code</p>');
+  });
+
+  document.getElementById('pixModal').classList.add('show');
+}
+
+function copyPix() {
+  const code = document.getElementById('pixCodeBox')?.textContent;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => toast('Código PIX copiado ✓')).catch(() => {
+    const el = document.getElementById('pixCodeBox');
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    toast('Código PIX copiado ✓');
+  });
+}
+
+function sendWaFromPix() {
+  if (pixApptId) sendWhatsApp(pixApptId);
+}
+
+// ============ WHATSAPP ============
+function sendWhatsApp(apptId) {
+  const a = state.appts.find(x => x.id === apptId);
+  const c = state.clients.find(x => x.id === a.clientId);
+  const s = state.services.find(x => x.id === a.serviceId);
+  if (!c || !c.phone) { toast('Cliente sem telefone cadastrado'); return; }
+  const dateBr = a.date.split('-').reverse().join('/');
+  const prof = settings.professionalName || '';
+  const msg = `Olá ${c.name.split(' ')[0]}! 💕\n\nPassando para confirmar seu agendamento:\n\n✂️ *${s.name}*\n📅 ${dateBr} às ${a.time}\n💰 ${brl(s.price)}\n\nAguardo você! Qualquer dúvida, é só chamar. 😊`;
+  window.open(`https://wa.me/55${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function wishBday(id) {
+  const c = state.clients.find(x => x.id === id);
+  const msg = `Parabéns, ${c.name.split(' ')[0]}! 🎉🎂\n\nQue seu novo ciclo seja repleto de luz, conquistas e muita beleza! Um presentinho especial te aguarda no seu próximo atendimento. 💕`;
+  window.open(`https://wa.me/55${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ============ APPOINTMENTS ============
+function openAppt(id) {
+  editingId.appt = id || null;
+  document.getElementById('apptTitle').textContent = id ? 'Editar agendamento' : 'Novo agendamento';
+  const cli = document.getElementById('apptClient');
+  cli.innerHTML = '<option value="">Selecione um cliente...</option>' + state.clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  const svc = document.getElementById('apptService');
+  svc.innerHTML = '<option value="">Selecione um serviço...</option>' + state.services.map(s => `<option value="${s.id}">${escapeHtml(s.name)} · ${brl(s.price)}</option>`).join('');
+  if (id) {
+    const a = state.appts.find(x => x.id === id);
+    cli.value = a.clientId;
+    svc.value = a.serviceId;
+    document.getElementById('apptDate').value = a.date;
+    document.getElementById('apptTime').value = a.time;
+    document.getElementById('apptNotes').value = a.notes || '';
+  } else {
+    document.getElementById('apptDate').value = selectedDay;
+    document.getElementById('apptTime').value = '';
+    document.getElementById('apptNotes').value = '';
+  }
+  document.getElementById('apptModal').classList.add('show');
+}
+
+async function saveAppt() {
+  const clientId = document.getElementById('apptClient').value;
+  const serviceId = document.getElementById('apptService').value;
+  const date = document.getElementById('apptDate').value;
+  const time = document.getElementById('apptTime').value;
+  const notes = document.getElementById('apptNotes').value;
+  if (!clientId || !serviceId || !date || !time) { toast('Preencha todos os campos'); return; }
+
+  const isNew = !editingId.appt;
+  let savedId = editingId.appt;
+
+  if (editingId.appt) {
+    const data = { clientId, serviceId, date, time, notes };
+    await userCol('appts').doc(editingId.appt).update(data);
+    Object.assign(state.appts.find(x => x.id === editingId.appt), data);
+  } else {
+    const data = { clientId, serviceId, date, time, notes, done: false, createdAt: Date.now() };
+    const ref = await userCol('appts').add(data);
+    savedId = ref.id;
+    state.appts.push({ id: savedId, ...data });
+  }
+  closeModal('apptModal');
+  renderAll();
+  toast(isNew ? 'Agendamento criado ✓' : 'Agendamento atualizado ✓');
+
+  if (isNew) {
+    // Auto-trigger: WhatsApp + PIX
+    const c = state.clients.find(x => x.id === clientId);
+    if (c && c.phone) {
+      setTimeout(() => sendWhatsApp(savedId), 400);
+    }
+    if (settings.pixKey) {
+      setTimeout(() => openPixModal(savedId), 800);
+    }
+  }
+}
+
+async function delAppt(id) {
+  if (!confirm('Cancelar este agendamento?')) return;
+  await userCol('appts').doc(id).delete();
+  state.appts = state.appts.filter(a => a.id !== id);
+  renderAll();
+  toast('Agendamento cancelado');
+}
+
+// ============ CLIENTS ============
+function openClient(id) {
+  editingId.client = id || null;
+  document.getElementById('clientTitle').textContent = id ? 'Editar cliente' : 'Novo cliente';
+  if (id) {
+    const c = state.clients.find(x => x.id === id);
+    document.getElementById('cliName').value = c.name;
+    document.getElementById('cliPhone').value = c.phone || '';
+    document.getElementById('cliBday').value = c.bday || '';
+    document.getElementById('cliEmail').value = c.email || '';
+    document.getElementById('cliNotes').value = c.notes || '';
+  } else {
+    ['cliName', 'cliPhone', 'cliBday', 'cliEmail', 'cliNotes'].forEach(i => document.getElementById(i).value = '');
+  }
+  document.getElementById('clientModal').classList.add('show');
+}
+async function saveClient() {
+  const name = document.getElementById('cliName').value.trim();
+  if (!name) { toast('Informe o nome'); return; }
+  const data = { name, phone: document.getElementById('cliPhone').value.replace(/\D/g, ''), bday: document.getElementById('cliBday').value, email: document.getElementById('cliEmail').value, notes: document.getElementById('cliNotes').value };
+  if (editingId.client) {
+    await userCol('clients').doc(editingId.client).update(data);
+    Object.assign(state.clients.find(x => x.id === editingId.client), data);
+  } else {
+    const ref = await userCol('clients').add({ ...data, createdAt: Date.now() });
+    state.clients.push({ id: ref.id, ...data });
+  }
+  closeModal('clientModal');
+  renderAll();
+  toast('Cliente salvo ✓');
+}
+async function delClient(id) {
+  if (!confirm('Excluir este cliente?')) return;
+  await userCol('clients').doc(id).delete();
+  state.clients = state.clients.filter(c => c.id !== id);
+  renderAll();
+  toast('Cliente removido');
+}
+
+// ============ SERVICES ============
+function openService(id) {
+  editingId.service = id || null;
+  document.getElementById('serviceTitle').textContent = id ? 'Editar serviço' : 'Novo serviço';
+  if (id) {
+    const s = state.services.find(x => x.id === id);
+    document.getElementById('svcName').value = s.name;
+    document.getElementById('svcPrice').value = s.price;
+    document.getElementById('svcDur').value = s.duration;
+    document.getElementById('svcComm').value = s.commission;
+  } else {
+    ['svcName', 'svcPrice', 'svcDur', 'svcComm'].forEach(i => document.getElementById(i).value = '');
+  }
+  document.getElementById('serviceModal').classList.add('show');
+}
+async function saveService() {
+  const name = document.getElementById('svcName').value.trim();
+  const price = parseFloat(document.getElementById('svcPrice').value);
+  if (!name || !price) { toast('Preencha nome e preço'); return; }
+  const data = { name, price, duration: parseInt(document.getElementById('svcDur').value) || 60, commission: parseFloat(document.getElementById('svcComm').value) || 0 };
+  if (editingId.service) {
+    await userCol('services').doc(editingId.service).update(data);
+    Object.assign(state.services.find(x => x.id === editingId.service), data);
+  } else {
+    const ref = await userCol('services').add({ ...data, createdAt: Date.now() });
+    state.services.push({ id: ref.id, ...data });
+  }
+  closeModal('serviceModal');
+  renderAll();
+  toast('Serviço salvo ✓');
+}
+async function delService(id) {
+  if (!confirm('Excluir este serviço?')) return;
+  await userCol('services').doc(id).delete();
+  state.services = state.services.filter(s => s.id !== id);
+  renderAll();
+}
+
+// ============ RENDER ============
+function renderApptCard(a) {
+  const c = state.clients.find(x => x.id === a.clientId);
+  const s = state.services.find(x => x.id === a.serviceId);
+  if (!c || !s) return '';
+  const [y, m, d] = a.date.split('-');
+  const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  return `<div class="appt">
+    <div class="appt-time"><div class="h">${d}</div><div class="d">${months[parseInt(m) - 1]}</div></div>
+    <div class="appt-info">
+      <div class="name">${escapeHtml(c.name)} · ${a.time}</div>
+      <div class="svc"><strong>${escapeHtml(s.name)}</strong> · ${brl(s.price)}</div>
+    </div>
+    <div class="appt-actions">
+      ${c.phone ? `<button class="icon-btn wa" onclick="sendWhatsApp('${a.id}')" title="WhatsApp">💬</button>` : ''}
+      <button class="icon-btn pix" onclick="openPixModal('${a.id}')" title="Gerar PIX">◈</button>
+      <button class="icon-btn" onclick="openAppt('${a.id}')" title="Editar">✎</button>
+      <button class="icon-btn del" onclick="delAppt('${a.id}')" title="Cancelar">×</button>
+    </div>
+  </div>`;
+}
+
+function renderDash() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dashToday').textContent = state.appts.filter(a => a.date === today).length;
+  const now = new Date();
+  const ws = new Date(now); ws.setDate(now.getDate() - now.getDay());
+  const we = new Date(ws); we.setDate(ws.getDate() + 6);
+  document.getElementById('dashWeek').textContent = state.appts.filter(a => { const d = new Date(a.date + 'T12:00:00'); return d >= ws && d <= we; }).length;
+  const month = now.toISOString().slice(0, 7);
+  const monthRev = state.appts.filter(a => a.date.startsWith(month)).reduce((sum, a) => { const s = state.services.find(x => x.id === a.serviceId); return sum + (s ? s.price : 0); }, 0);
+  document.getElementById('dashRev').textContent = brl(monthRev);
+  document.getElementById('dashClients').textContent = state.clients.length;
+  document.getElementById('todayDate').textContent = '· ' + now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('greetName').textContent = settings.professionalName || 'profissional';
+
+  const upcoming = state.appts.filter(a => a.date >= today).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 5);
+  const up = document.getElementById('upcomingList');
+  up.innerHTML = upcoming.length ? upcoming.map(renderApptCard).join('') : '<div class="empty-state"><h4>Nenhum agendamento</h4><p>Que tal criar o primeiro?</p></div>';
+
+  const thisMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+  const bdays = state.clients.filter(c => c.bday && c.bday.slice(5, 7) === thisMonth);
+  const bd = document.getElementById('bdayList');
+  bd.innerHTML = bdays.length ? bdays.map(c => {
+    const day = c.bday.split('-')[2];
+    return `<div class="appt"><div class="appt-time"><div class="h">${day}</div><div class="d">dia</div></div><div class="appt-info"><div class="name">${escapeHtml(c.name)}</div><div class="svc">🎂 Aniversariante do mês</div></div>${c.phone ? `<button class="icon-btn wa" onclick="wishBday('${c.id}')" title="Parabenizar">💬</button>` : ''}</div>`;
+  }).join('') : '<div class="empty-state"><h4>Nenhum aniversariante</h4><p>Cadastre datas de nascimento</p></div>';
+}
+
+function renderCalendar() {
+  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  document.getElementById('calMonth').textContent = months[calDate.getMonth()] + ' ' + calDate.getFullYear();
+  const first = new Date(calDate.getFullYear(), calDate.getMonth(), 1);
+  const last = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 0);
+  const startDay = first.getDay();
+  const todayStr = new Date().toISOString().split('T')[0];
+  let html = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < startDay; i++) { const d = new Date(first); d.setDate(d.getDate() - (startDay - i)); html += `<div class="cal-day muted">${d.getDate()}</div>`; }
+  for (let i = 1; i <= last.getDate(); i++) {
+    const dStr = `${calDate.getFullYear()}-${(calDate.getMonth() + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+    const cls = ['cal-day', dStr === todayStr ? 'today' : '', dStr === selectedDay ? 'selected' : '', state.appts.some(a => a.date === dStr) ? 'has-appt' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="selectDay('${dStr}')">${i}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+  renderDayAppts();
+}
+function selectDay(d) { selectedDay = d; renderCalendar(); }
+function changeMonth(n) { calDate.setMonth(calDate.getMonth() + n); renderCalendar(); }
+function goToday() { calDate = new Date(); selectedDay = new Date().toISOString().split('T')[0]; renderCalendar(); }
+function renderDayAppts() {
+  const [y, m, d] = selectedDay.split('-');
+  document.getElementById('dayTitle').textContent = `${d}/${m}/${y}`;
+  const dayAppts = state.appts.filter(a => a.date === selectedDay).sort((a, b) => a.time.localeCompare(b.time));
+  document.getElementById('dayAppts').innerHTML = dayAppts.length ? dayAppts.map(renderApptCard).join('') : '<div class="empty-state"><h4>Dia livre</h4><p>Nenhum agendamento</p></div>';
+}
+
+function renderClients() {
+  const q = (document.getElementById('clientSearch')?.value || '').toLowerCase();
+  let list = state.clients;
+  if (q) list = list.filter(c => c.name.toLowerCase().includes(q) || (c.phone || '').includes(q));
+  const box = document.getElementById('clientsTable');
+  if (!list.length) { box.innerHTML = '<div class="empty-state"><h4>Nenhum cliente</h4><p>Cadastre o primeiro para começar</p></div>'; return; }
+  box.innerHTML = `<table><thead><tr><th>Nome</th><th>Telefone</th><th>Aniversário</th><th>Atendimentos</th><th></th></tr></thead><tbody>${list.map(c => {
+    const count = state.appts.filter(a => a.clientId === c.id).length;
+    const bday = c.bday ? c.bday.split('-').reverse().slice(0, 2).join('/') : '—';
+    return `<tr><td><strong>${escapeHtml(c.name)}</strong></td><td>${c.phone || '—'}</td><td>${bday}</td><td><span class="tag">${count}</span></td><td style="text-align:right"><button class="icon-btn" onclick="openClient('${c.id}')">✎</button> <button class="icon-btn del" onclick="delClient('${c.id}')">×</button></td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+function renderServices() {
+  const box = document.getElementById('servicesTable');
+  if (!state.services.length) { box.innerHTML = '<div class="empty-state"><h4>Nenhum serviço</h4><p>Cadastre os serviços que você oferece</p></div>'; return; }
+  box.innerHTML = `<table><thead><tr><th>Serviço</th><th>Preço</th><th>Duração</th><th>Comissão</th><th></th></tr></thead><tbody>${state.services.map(s => `<tr><td><strong>${escapeHtml(s.name)}</strong></td><td>${brl(s.price)}</td><td><span class="tag gold">${s.duration} min</span></td><td><span class="tag sage">${s.commission}%</span></td><td style="text-align:right"><button class="icon-btn" onclick="openService('${s.id}')">✎</button> <button class="icon-btn del" onclick="delService('${s.id}')">×</button></td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderReports() {
+  const total = state.appts.reduce((sum, a) => { const s = state.services.find(x => x.id === a.serviceId); return sum + (s ? s.price : 0); }, 0);
+  document.getElementById('repTotal').textContent = brl(total);
+  document.getElementById('repAvg').textContent = brl(state.appts.length ? total / state.appts.length : 0);
+  const svcCount = {};
+  state.appts.forEach(a => { svcCount[a.serviceId] = (svcCount[a.serviceId] || 0) + 1; });
+  let topId = null, topCount = 0;
+  Object.entries(svcCount).forEach(([id, c]) => { if (c > topCount) { topId = id; topCount = c; } });
+  const topSvc = state.services.find(s => s.id === topId);
+  document.getElementById('repTop').textContent = topSvc ? topSvc.name : '—';
+  document.getElementById('repTopCount').textContent = `${topCount} atendimento${topCount !== 1 ? 's' : ''}`;
+  const monthly = {};
+  state.appts.forEach(a => { const m = a.date.slice(0, 7); monthly[m] = (monthly[m] || 0) + 1; });
+  const sorted = Object.entries(monthly).sort();
+  const max = Math.max(...sorted.map(([, c]) => c), 1);
+  const box = document.getElementById('monthlyChart');
+  if (!sorted.length) { box.innerHTML = '<div class="empty-state"><h4>Sem dados ainda</h4></div>'; return; }
+  const mnames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  box.innerHTML = `<div style="display:flex;align-items:flex-end;gap:14px;height:220px;padding-top:20px;border-bottom:1px solid var(--line);padding-bottom:10px">${sorted.map(([m, c]) => {
+    const [y, mm] = m.split('-');
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px"><div style="font-family:'DM Serif Display';font-size:18px">${c}</div><div style="width:100%;height:${(c / max) * 180}px;background:linear-gradient(180deg,var(--accent),var(--accent-soft));border-radius:8px 8px 0 0"></div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">${mnames[parseInt(mm) - 1]}/${y.slice(2)}</div></div>`;
+  }).join('')}</div>`;
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `agenda-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  toast('Backup baixado ✓');
+}
+
+function renderAll() {
+  renderDash();
+  renderCalendar();
+  renderClients();
+  renderServices();
+  renderReports();
+}
+</script>
+</body>
+</html>

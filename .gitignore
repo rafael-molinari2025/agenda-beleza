@@ -1,0 +1,6 @@
+# Renomeie firebase-config.js para firebase-config.example.js e adicione seus dados reais aqui:
+# firebase-config.js
+
+.firebase/
+node_modules/
+*.local
