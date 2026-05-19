@@ -16,10 +16,8 @@
       "node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/app",
-        "destination": "/app.html"
-      }
+      { "source": "/app", "destination": "/app.html" },
+      { "source": "/manual", "destination": "/manual.html" }
     ],
     "headers": [
       {

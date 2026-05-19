@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belle·Agenda · Manual do Sistema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F4;--surface:#FFFFFF;--ink:#2A1F2E;--ink-soft:#6B5B6E;--accent:#C9376C;--accent-soft:#F4D5DD;--gold:#B8956A;--sage:#8DA88E;--line:#EDE5E3;--shadow:0 4px 24px rgba(42,31,46,.06);--shadow-lg:0 12px 40px rgba(42,31,46,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.top-bar{background:var(--surface);border-bottom:1px solid var(--line);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.brand{font-family:'DM Serif Display';font-size:24px;letter-spacing:-.3px}
+.brand em{color:var(--accent);font-style:italic}
+.brand small{font-family:'Inter';font-size:12px;color:var(--ink-soft);font-weight:500;margin-left:10px;letter-spacing:.5px;vertical-align:middle}
+.top-actions{display:flex;gap:10px;align-items:center}
+.btn{padding:10px 20px;border-radius:50px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:#A82959;transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,55,108,.3)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 65px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--line);padding:28px 20px;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto}
+.sidebar h3{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:10px;margin-top:20px;padding:0 6px}
+.sidebar h3:first-child{margin-top:0}
+.toc-link{display:block;padding:8px 10px;border-radius:8px;font-size:13px;color:var(--ink-soft);text-decoration:none;transition:.2s;border-left:3px solid transparent}
+.toc-link:hover{background:var(--bg);color:var(--ink);border-left-color:var(--accent-soft)}
+.toc-link.active{background:var(--accent-soft);color:var(--accent);font-weight:600;border-left-color:var(--accent)}
+
+.content{padding:48px 60px;max-width:860px}
+.content h1{font-family:'DM Serif Display';font-size:48px;letter-spacing:-1.5px;line-height:1.05;margin-bottom:12px}
+.content h1 em{color:var(--accent);font-style:italic}
+.content .subtitle{font-size:16px;color:var(--ink-soft);margin-bottom:40px;line-height:1.6}
+.section{margin-bottom:60px;scroll-margin-top:80px}
+.section h2{font-family:'DM Serif Display';font-size:32px;letter-spacing:-.5px;margin-bottom:6px;padding-bottom:14px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:12px}
+.section h2 .icon{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.section h2 .icon svg{width:18px;height:18px;color:var(--accent)}
+.section h3{font-family:'DM Serif Display';font-size:20px;margin:22px 0 8px;color:var(--ink)}
+.section p{font-size:14px;line-height:1.75;color:var(--ink-soft);margin-bottom:12px}
+.section p strong{color:var(--ink);font-weight:600}
+.section ul,.section ol{padding-left:20px;margin-bottom:12px}
+.section li{font-size:14px;line-height:1.75;color:var(--ink-soft);margin-bottom:4px}
+.section li strong{color:var(--ink);font-weight:600}
+.tip{background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:14px 16px;margin:16px 0;font-size:13px;color:#92400E;line-height:1.6;display:flex;gap:10px}
+.tip-icon{flex-shrink:0;font-size:16px}
+.warn{background:#FEF3C7;border:1px solid #FDE68A;border-radius:12px;padding:14px 16px;margin:16px 0;font-size:13px;color:#78350F;line-height:1.6;display:flex;gap:10px}
+.note{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:14px 16px;margin:16px 0;font-size:13px;color:#1E40AF;line-height:1.6;display:flex;gap:10px}
+.step-list{counter-reset:steps;list-style:none;padding:0;margin-bottom:16px}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:10px;font-size:14px;color:var(--ink-soft);line-height:1.6}
+.step-list li::before{content:counter(steps);min-width:26px;height:26px;background:var(--accent);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-list li strong{color:var(--ink);font-weight:600}
+.kbd{display:inline-block;background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 7px;font-family:monospace;font-size:12px;color:var(--ink)}
+.badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;vertical-align:middle;margin:0 2px}
+.badge-pink{background:var(--accent-soft);color:var(--accent)}
+.badge-green{background:#D1FAE5;color:#065F46}
+.badge-gold{background:rgba(184,149,106,.2);color:var(--gold)}
+.badge-blue{background:#DBEAFE;color:#1D4ED8}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.feature-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.feature-card h4{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.feature-card p{font-size:12px;color:var(--ink-soft);line-height:1.6}
+.divider{height:1px;background:var(--line);margin:40px 0}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .content{padding:28px 20px}
+  .content h1{font-size:36px}
+  .top-bar{padding:14px 20px}
+  .feature-grid{grid-template-columns:1fr}
+}
+
+/* ====== PRINT STYLES ====== */
+@media print{
+  .top-bar{position:static;box-shadow:none;border-bottom:2px solid #ccc}
+  .top-actions{display:none}
+  .sidebar{display:none}
+  .layout{display:block}
+  .content{padding:20px;max-width:none}
+  .section{page-break-inside:avoid}
+  .section h2{border-bottom-color:#ccc}
+  .toc-link,.btn{display:none}
+  body{background:white}
+  a{color:inherit;text-decoration:none}
+  .tip,.warn,.note{border:1px solid #ccc;background:#f9f9f9}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <span class="brand">Belle<em>·</em>Agenda <small>Manual do Sistema</small></span>
+  </div>
+  <div class="top-actions">
+    <a href="app.html" class="btn btn-ghost">← Voltar ao sistema</a>
+    <button class="btn btn-primary" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+      Baixar PDF
+    </button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <h3>Introdução</h3>
+    <a href="#visao-geral" class="toc-link">Visão Geral</a>
+    <a href="#acesso" class="toc-link">Acesso ao sistema</a>
+    <h3>Módulos</h3>
+    <a href="#painel" class="toc-link">Painel (Dashboard)</a>
+    <a href="#agenda" class="toc-link">Agenda / Calendário</a>
+    <a href="#clientes" class="toc-link">Clientes</a>
+    <a href="#servicos" class="toc-link">Serviços</a>
+    <a href="#relatorios" class="toc-link">Relatórios</a>
+    <a href="#configuracoes" class="toc-link">Configurações</a>
+    <h3>Integrações</h3>
+    <a href="#whatsapp" class="toc-link">WhatsApp</a>
+    <a href="#pix" class="toc-link">PIX / QR Code</a>
+    <h3>Dados</h3>
+    <a href="#backup" class="toc-link">Backup e exportação</a>
+    <a href="#seguranca" class="toc-link">Segurança e privacidade</a>
+    <a href="#faq" class="toc-link">Perguntas frequentes</a>
+  </nav>
+
+  <div class="content">
+    <h1>Manual do<br><em>Belle·Agenda</em></h1>
+    <p class="subtitle">Guia completo para gerenciar sua agenda de beleza e saúde — agendamentos, clientes, serviços, pagamentos PIX e muito mais.</p>
+
+    <!-- VISÃO GERAL -->
+    <section class="section" id="visao-geral">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+        Visão Geral
+      </h2>
+      <p>O <strong>Belle·Agenda</strong> é um sistema web de gerenciamento de agenda para salões de beleza e profissionais de saúde. Funciona 100% online, sem necessidade de instalar nenhum programa — basta abrir no navegador do celular, tablet ou computador.</p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>📅 Agenda inteligente</h4>
+          <p>Calendário visual com navegação por mês, marcação de dias com atendimentos e visualização por dia.</p>
+        </div>
+        <div class="feature-card">
+          <h4>👥 Gestão de clientes</h4>
+          <p>Cadastro completo com telefone, aniversário, e-mail e anotações. Busca rápida por nome ou telefone.</p>
+        </div>
+        <div class="feature-card">
+          <h4>💳 PIX automático</h4>
+          <p>Gera QR Code PIX no padrão BACEN para cada atendimento, com valor preenchido automaticamente.</p>
+        </div>
+        <div class="feature-card">
+          <h4>💬 WhatsApp integrado</h4>
+          <p>Envio de confirmação de agendamento e parabéns de aniversário com um toque.</p>
+        </div>
+        <div class="feature-card">
+          <h4>📊 Relatórios</h4>
+          <p>Faturamento realizado, ticket médio, serviço mais popular e gráfico mensal de atendimentos.</p>
+        </div>
+        <div class="feature-card">
+          <h4>☁️ Nuvem segura</h4>
+          <p>Dados salvos no Firebase (Google). Acesse de qualquer dispositivo com o mesmo login.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACESSO -->
+    <section class="section" id="acesso">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        Acesso ao sistema
+      </h2>
+      <p>O sistema está disponível em: <strong>https://bella-agenda-226f0.web.app</strong></p>
+
+      <h3>Criar conta</h3>
+      <ol class="step-list">
+        <li>Acesse o endereço acima e clique na aba <strong>Criar conta</strong>.</li>
+        <li>Preencha o <strong>nome do salão ou profissional</strong>, seu <strong>e-mail</strong> e uma <strong>senha</strong> (mínimo 6 caracteres).</li>
+        <li>Clique em <strong>Criar conta</strong>. O sistema cria automaticamente um perfil e um serviço de exemplo (Corte Feminino).</li>
+        <li>Você será redirecionado ao painel principal.</li>
+      </ol>
+
+      <h3>Entrar (login)</h3>
+      <ol class="step-list">
+        <li>Na aba <strong>Entrar</strong>, digite seu e-mail e senha cadastrados.</li>
+        <li>Clique em <strong>Entrar</strong> ou pressione <kbd class="kbd">Enter</kbd>.</li>
+      </ol>
+
+      <h3>Esqueci a senha</h3>
+      <ol class="step-list">
+        <li>Na tela de login, digite seu e-mail no campo correspondente.</li>
+        <li>Clique em <strong>Esqueci a senha</strong>.</li>
+        <li>Você receberá um e-mail com o link para redefinição da senha.</li>
+      </ol>
+
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <span>Adicione o sistema à tela inicial do seu celular para um acesso rápido, como se fosse um aplicativo. No iPhone: toque em Compartilhar → Adicionar à Tela de Início. No Android: toque nos três pontos do navegador → Adicionar à tela inicial.</span>
+      </div>
+    </section>
+
+    <!-- PAINEL -->
+    <section class="section" id="painel">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+        Painel (Dashboard)
+      </h2>
+      <p>O painel é a primeira tela exibida ao entrar no sistema. Apresenta um resumo do seu dia e semana.</p>
+
+      <h3>Cartões de resumo</h3>
+      <ul>
+        <li><strong>Hoje:</strong> quantidade de agendamentos para o dia atual.</li>
+        <li><strong>Esta semana:</strong> total de atendimentos na semana corrente (domingo a sábado).</li>
+        <li><strong>Faturamento previsto:</strong> soma dos valores de todos os agendamentos do mês atual.</li>
+        <li><strong>Clientes ativos:</strong> total de clientes cadastrados no sistema.</li>
+      </ul>
+
+      <h3>Próximos atendimentos</h3>
+      <p>Lista os 5 próximos agendamentos a partir de hoje, em ordem cronológica. Cada card exibe o cliente, serviço, horário e botões de ação rápida (WhatsApp, PIX, editar, cancelar).</p>
+
+      <h3>Aniversariantes do mês</h3>
+      <p>Exibe automaticamente todos os clientes que fazem aniversário no mês atual. Um botão de WhatsApp permite enviar mensagem de parabéns com um toque.</p>
+
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <span>Para que os aniversariantes apareçam, é necessário cadastrar a data de nascimento dos clientes na tela de <strong>Clientes</strong>.</span>
+      </div>
+    </section>
+
+    <!-- AGENDA -->
+    <section class="section" id="agenda">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        Agenda / Calendário
+      </h2>
+      <p>A agenda mostra todos os seus agendamentos em formato de calendário mensal, com lista detalhada do dia selecionado.</p>
+
+      <h3>Navegar pelo calendário</h3>
+      <ul>
+        <li>Use os botões <strong>‹</strong> e <strong>›</strong> para avançar ou voltar meses.</li>
+        <li>Clique no botão <strong>•</strong> (ponto central) para voltar ao mês atual.</li>
+        <li>Dias com ponto dourado abaixo do número possuem agendamentos.</li>
+        <li>O dia atual é destacado com borda rosa. O dia selecionado fica com fundo rosa.</li>
+      </ul>
+
+      <h3>Criar novo agendamento</h3>
+      <ol class="step-list">
+        <li>Clique no dia desejado no calendário para selecioná-lo.</li>
+        <li>Clique em <strong>+ Novo agendamento</strong> (ou no botão <strong>+</strong> flutuante no celular).</li>
+        <li>Selecione o <strong>cliente</strong> e o <strong>serviço</strong> nos menus suspensos.</li>
+        <li>Confirme ou ajuste a <strong>data</strong> e defina o <strong>horário</strong>.</li>
+        <li>Adicione observações se necessário e clique em <strong>Salvar</strong>.</li>
+      </ol>
+      <div class="note">
+        <span class="tip-icon">ℹ️</span>
+        <span>Ao salvar um novo agendamento, o sistema abre automaticamente o WhatsApp com mensagem de confirmação (se o cliente tiver telefone) e, em seguida, exibe o QR Code PIX para cobrança.</span>
+      </div>
+
+      <h3>Ações em cada agendamento</h3>
+      <ul>
+        <li><span class="badge badge-green">✓ Concluído</span> — marca ou desmarca o atendimento como realizado. Afeta os relatórios de faturamento.</li>
+        <li><span class="badge badge-pink">💬 WhatsApp</span> — abre o WhatsApp com mensagem de confirmação pré-preenchida.</li>
+        <li><span class="badge badge-blue">PIX</span> — gera o QR Code PIX com o valor do serviço.</li>
+        <li><strong>✎ Editar</strong> — abre o formulário para alterar dados do agendamento.</li>
+        <li><strong>× Cancelar</strong> — remove o agendamento após confirmação.</li>
+      </ul>
+    </section>
+
+    <!-- CLIENTES -->
+    <section class="section" id="clientes">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
+        Clientes
+      </h2>
+      <p>Gerencie a base completa de clientes do seu estabelecimento.</p>
+
+      <h3>Cadastrar cliente</h3>
+      <ol class="step-list">
+        <li>Clique em <strong>+ Novo cliente</strong>.</li>
+        <li>Preencha o <strong>nome completo</strong> (obrigatório).</li>
+        <li>Adicione <strong>telefone/WhatsApp</strong> (somente números, com DDD).</li>
+        <li>Informe a <strong>data de nascimento</strong> para receber alertas de aniversário.</li>
+        <li>Preencha e-mail e anotações opcionais e clique em <strong>Salvar</strong>.</li>
+      </ol>
+
+      <h3>Buscar clientes</h3>
+      <p>Use o campo de busca no topo da lista para filtrar por <strong>nome</strong> ou <strong>telefone</strong> em tempo real.</p>
+
+      <h3>Coluna "Atend."</h3>
+      <p>Exibe o número total de agendamentos vinculados a cada cliente — útil para identificar clientes frequentes.</p>
+
+      <div class="warn">
+        <span class="tip-icon">⚠️</span>
+        <span>Ao excluir um cliente, os agendamentos vinculados a ele <strong>não são excluídos automaticamente</strong>. Eles ficam como registros "órfãos" na base de dados. Recomendamos cancelar os agendamentos antes de excluir o cliente.</span>
+      </div>
+    </section>
+
+    <!-- SERVIÇOS -->
+    <section class="section" id="servicos">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></span>
+        Serviços
+      </h2>
+      <p>Cadastre todos os serviços oferecidos com seus respectivos preços, duração e comissão.</p>
+
+      <h3>Cadastrar serviço</h3>
+      <ol class="step-list">
+        <li>Clique em <strong>+ Novo serviço</strong>.</li>
+        <li>Informe o <strong>nome do serviço</strong> (ex.: Corte + Escova).</li>
+        <li>Preencha o <strong>preço</strong> em reais (usado para gerar o PIX e nos relatórios).</li>
+        <li>Defina a <strong>duração em minutos</strong> (referência para organizar a agenda).</li>
+        <li>Informe a <strong>comissão em %</strong> do profissional que realiza o serviço.</li>
+        <li>Clique em <strong>Salvar</strong>.</li>
+      </ol>
+
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <span>O campo <strong>Comissão</strong> é informativo — o sistema calcula automaticamente o valor a pagar ao profissional nos relatórios futuros. Informe 0% se não usar comissionamento.</span>
+      </div>
+
+      <div class="warn">
+        <span class="tip-icon">⚠️</span>
+        <span>Ao tentar excluir um serviço que possui agendamentos vinculados, o sistema exibirá um aviso com a quantidade de agendamentos afetados antes de prosseguir.</span>
+      </div>
+    </section>
+
+    <!-- RELATÓRIOS -->
+    <section class="section" id="relatorios">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        Relatórios
+      </h2>
+      <p>Acompanhe o desempenho financeiro do seu estabelecimento com dados de atendimentos concluídos.</p>
+
+      <h3>Indicadores</h3>
+      <ul>
+        <li><strong>Faturamento realizado:</strong> soma dos valores de todos os atendimentos marcados como <span class="badge badge-green">Concluído</span>.</li>
+        <li><strong>Ticket médio:</strong> valor médio por atendimento concluído.</li>
+        <li><strong>Serviço mais popular:</strong> o serviço com mais atendimentos concluídos.</li>
+      </ul>
+
+      <h3>Gráfico mensal</h3>
+      <p>Barras verticais mostrando a quantidade de atendimentos concluídos por mês. Passe o mouse sobre as barras para ver os valores. O histórico é acumulativo desde o início do uso do sistema.</p>
+
+      <div class="note">
+        <span class="tip-icon">ℹ️</span>
+        <span>Os relatórios consideram apenas agendamentos marcados como <strong>Concluído</strong>. Lembre-se de marcar cada atendimento ao finalizá-lo usando o botão <strong>✓</strong> no card do agendamento.</span>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section class="section" id="configuracoes">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        Configurações
+      </h2>
+
+      <h3>Dados do estabelecimento</h3>
+      <ul>
+        <li><strong>Nome do salão / profissional:</strong> aparece na barra lateral e nos relatórios.</li>
+        <li><strong>Nome para saudação:</strong> usado na saudação do painel (ex.: "Olá, Maria").</li>
+      </ul>
+
+      <h3>Configuração PIX</h3>
+      <p>Para gerar QR Codes PIX válidos, preencha os três campos obrigatórios:</p>
+      <ul>
+        <li><strong>Chave PIX:</strong> pode ser CPF, CNPJ, e-mail, telefone com DDD (ex.: 11999999999) ou chave aleatória.</li>
+        <li><strong>Nome do recebedor:</strong> seu nome ou nome do salão (máximo 25 caracteres). Aparece no app do pagador.</li>
+        <li><strong>Cidade:</strong> cidade onde o estabelecimento está localizado (máximo 15 caracteres). Campo obrigatório pelo padrão BACEN.</li>
+      </ul>
+      <p>Após preencher, clique em <strong>Salvar</strong> no topo da tela.</p>
+
+      <div class="warn">
+        <span class="tip-icon">⚠️</span>
+        <span>Sem a chave PIX configurada, o sistema exibirá um aviso no modal de cobrança, mas não gerará o QR Code. Configure antes de começar a atender para aproveitar a cobrança automática.</span>
+      </div>
+    </section>
+
+    <!-- WHATSAPP -->
+    <section class="section" id="whatsapp">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        WhatsApp
+      </h2>
+      <p>O Belle·Agenda integra com o WhatsApp para envio de mensagens diretamente do sistema, sem precisar sair da tela.</p>
+
+      <h3>Confirmação de agendamento (automática)</h3>
+      <p>Ao <strong>criar</strong> um novo agendamento (não ao editar), o sistema abre o WhatsApp automaticamente após 0,5 segundo com a seguinte mensagem pré-preenchida:</p>
+      <div class="tip">
+        <span class="tip-icon">💬</span>
+        <span><em>Olá [Nome]! 💕<br><br>Confirmando seu agendamento:<br><br>✂️ [Serviço]<br>📅 [Data] às [Hora]<br>💰 [Valor]<br><br>Aguardo você! 😊</em></span>
+      </div>
+      <p>A mensagem é enviada para o número cadastrado do cliente (com código de país +55 do Brasil). Você pode editar a mensagem antes de enviar.</p>
+
+      <h3>Mensagem manual</h3>
+      <p>Use o botão <strong>💬</strong> em qualquer card de agendamento para enviar a confirmação a qualquer momento.</p>
+
+      <h3>Parabéns de aniversário</h3>
+      <p>No painel, clique no botão <strong>💬</strong> ao lado do aniversariante para enviar uma mensagem personalizada de parabéns.</p>
+
+      <div class="note">
+        <span class="tip-icon">ℹ️</span>
+        <span>O sistema só exibe o botão de WhatsApp se o cliente tiver telefone cadastrado. O número deve estar no formato com DDD, apenas dígitos (ex.: 31999999999).</span>
+      </div>
+    </section>
+
+    <!-- PIX -->
+    <section class="section" id="pix">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+        PIX / QR Code
+      </h2>
+      <p>O sistema gera QR Codes PIX no padrão oficial EMV/BACEN (o mesmo utilizado pelos bancos brasileiros), de forma totalmente offline — sem APIs externas.</p>
+
+      <h3>Gerar cobrança PIX</h3>
+      <ol class="step-list">
+        <li>Certifique-se de que sua <strong>chave PIX</strong> está configurada em <strong>Configurações</strong>.</li>
+        <li>Em qualquer card de agendamento, clique no botão <span class="badge badge-blue">PIX</span>.</li>
+        <li>O modal exibirá o QR Code com o valor do serviço preenchido automaticamente.</li>
+        <li>Mostre o QR Code para o cliente ou clique no <strong>código "Pix Copia e Cola"</strong> para copiar.</li>
+      </ol>
+
+      <h3>Pix Copia e Cola</h3>
+      <p>Abaixo do QR Code há o código em texto (Pix Copia e Cola). Clique nele para copiar e enviar por WhatsApp ou outro canal.</p>
+
+      <h3>WhatsApp a partir do PIX</h3>
+      <p>No modal PIX há um botão <strong>💬 WhatsApp</strong> que envia a confirmação do agendamento para o cliente sem precisar fechar a tela.</p>
+
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <span>O QR Code gerado inclui o valor exato do serviço, seu nome e cidade como definidos nas configurações. O cliente vê essas informações no aplicativo de pagamento antes de confirmar.</span>
+      </div>
+    </section>
+
+    <!-- BACKUP -->
+    <section class="section" id="backup">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg></span>
+        Backup e exportação
+      </h2>
+      <p>O sistema permite exportar todos os seus dados em formato JSON a qualquer momento.</p>
+
+      <h3>Como fazer backup</h3>
+      <ol class="step-list">
+        <li>Acesse a seção <strong>Relatórios</strong>.</li>
+        <li>Clique no botão <strong>↓ Backup</strong> no canto superior direito.</li>
+        <li>Um arquivo <code>agenda-backup-AAAA-MM-DD.json</code> será baixado automaticamente.</li>
+      </ol>
+
+      <p>O arquivo contém todos os seus dados:</p>
+      <ul>
+        <li><strong>clientes</strong> — cadastro completo de todos os clientes.</li>
+        <li><strong>serviços</strong> — todos os serviços com preços e durações.</li>
+        <li><strong>agendamentos</strong> — histórico completo com status de conclusão.</li>
+        <li><strong>configurações</strong> — dados do estabelecimento e chave PIX.</li>
+      </ul>
+
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <span>Recomendamos fazer backup mensalmente e guardar o arquivo em um local seguro (Google Drive, e-mail pessoal, etc.) como segurança adicional aos dados já armazenados na nuvem do Firebase.</span>
+      </div>
+    </section>
+
+    <!-- SEGURANÇA -->
+    <section class="section" id="seguranca">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        Segurança e privacidade
+      </h2>
+
+      <h3>Isolamento de dados</h3>
+      <p>Cada usuário acessa <strong>exclusivamente seus próprios dados</strong>. As regras de segurança do Firestore garantem que nenhum usuário consegue ler ou alterar dados de outro, mesmo que saiba o ID.</p>
+
+      <h3>Autenticação</h3>
+      <p>O acesso é protegido pelo Firebase Authentication (Google). A senha é criptografada e nunca armazenada em texto simples. Não há como recuperar senhas — apenas redefini-las por e-mail.</p>
+
+      <h3>Chave PIX no sistema</h3>
+      <p>Sua chave PIX é armazenada no banco de dados associada ao seu usuário. Os QR Codes são gerados localmente no navegador — a chave PIX <strong>nunca é enviada para servidores externos</strong>.</p>
+
+      <h3>Sessão</h3>
+      <p>O sistema mantém a sessão ativa. Para sair com segurança em dispositivos compartilhados, sempre clique em <strong>Sair</strong> no menu lateral.</p>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <h2>
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        Perguntas frequentes
+      </h2>
+
+      <h3>O sistema funciona sem internet?</h3>
+      <p>Não. O Belle·Agenda requer conexão com a internet para carregar e salvar dados. O QR Code PIX, porém, é gerado localmente após o carregamento da página.</p>
+
+      <h3>Posso usar em mais de um dispositivo ao mesmo tempo?</h3>
+      <p>Sim. Como os dados ficam na nuvem, você pode acessar do celular e do computador simultaneamente com o mesmo login. Porém, alterações em uma aba não atualizam automaticamente outra aba aberta — recarregue a página para sincronizar.</p>
+
+      <h3>O WhatsApp abre no celular ou no computador?</h3>
+      <p>No computador, abre o WhatsApp Web. No celular, abre o aplicativo do WhatsApp instalado. O número do cliente deve estar salvo com DDD para funcionar.</p>
+
+      <h3>O QR Code PIX gerado é válido em qualquer banco?</h3>
+      <p>Sim. O sistema segue rigorosamente o padrão EMV/BACEN (especificação oficial do Banco Central), funcionando em todos os bancos e fintechs brasileiros que suportam PIX.</p>
+
+      <h3>Como alterar o e-mail da minha conta?</h3>
+      <p>Atualmente o sistema não suporta alteração de e-mail pelo painel. Entre em contato com o suporte ou crie uma nova conta e transfira seus dados via backup.</p>
+
+      <h3>Os dados são perdidos se eu trocar de aparelho?</h3>
+      <p>Não. Todos os dados ficam salvos no Firebase (Google Cloud). Basta acessar com o mesmo e-mail e senha no novo dispositivo.</p>
+
+      <h3>Posso ter múltiplos profissionais na mesma conta?</h3>
+      <p>A versão atual suporta um login por estabelecimento. Cada profissional deve criar sua própria conta se quiser gerenciar agendas separadas.</p>
+
+      <h3>Por que o faturamento nos relatórios pode ser menor do que o esperado?</h3>
+      <p>Os relatórios contabilizam apenas agendamentos marcados como <span class="badge badge-green">Concluído</span>. Verifique se todos os atendimentos realizados foram marcados com o botão <strong>✓</strong> nos cards da agenda.</p>
+    </section>
+
+    <div class="divider"></div>
+    <p style="font-size:12px;color:var(--ink-soft);text-align:center;padding-bottom:40px">
+      Belle·Agenda v2.0 · Manual do sistema · Atualizado em 2026<br>
+      Para suporte técnico, acesse <strong>https://bella-agenda-226f0.web.app</strong>
+    </p>
+  </div>
+</div>
+
+<script>
+// Highlight active section in sidebar as user scrolls
+const sections = document.querySelectorAll('.section[id]');
+const links = document.querySelectorAll('.toc-link');
+function onScroll(){
+  let current='';
+  sections.forEach(s=>{
+    if(window.scrollY+100>=s.offsetTop)current=s.id;
+  });
+  links.forEach(l=>{
+    l.classList.toggle('active', l.getAttribute('href')==='#'+current);
+  });
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+onScroll();
+
+// Smooth scroll on sidebar clicks
+links.forEach(l=>{
+  l.addEventListener('click',e=>{
+    e.preventDefault();
+    const target=document.querySelector(l.getAttribute('href'));
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+</script>
+</body>
+</html>

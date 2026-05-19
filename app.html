@@ -187,7 +187,7 @@ tr:hover td{background:var(--bg)}
 
 /* ====== PIX MODAL ====== */
 .pix-qr{text-align:center;padding:16px 0}
-.pix-qr canvas{border-radius:12px;border:2px solid var(--line);max-width:100%;height:auto}
+.pix-qr img{border-radius:12px;border:2px solid var(--line);max-width:100%;height:auto}
 .pix-amount{font-family:'DM Serif Display';font-size:30px;color:var(--accent);margin-bottom:4px}
 .pix-lbl{font-size:12px;color:var(--ink-soft);margin-bottom:18px}
 .pix-code-box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:10px;word-break:break-all;font-family:monospace;margin-top:14px;cursor:pointer;transition:.2s;line-height:1.5}
@@ -251,6 +251,10 @@ tr:hover td{background:var(--bg)}
       Configurações
     </button>
     <div class="nav-spacer"></div>
+    <a href="manual.html" target="_blank" class="nav-item" style="text-decoration:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Manual
+    </a>
     <button class="nav-item nav-logout" onclick="doLogout()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Sair
@@ -350,8 +354,8 @@ tr:hover td{background:var(--bg)}
         <button class="btn btn-ghost" onclick="exportData()">↓ Backup</button>
       </div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="label">Faturamento total</div><div class="value" id="repTotal">R$ 0</div><div class="sub">todos os atendimentos</div></div>
-        <div class="stat-card gold"><div class="label">Ticket médio</div><div class="value" id="repAvg">R$ 0</div><div class="sub">por atendimento</div></div>
+        <div class="stat-card"><div class="label">Faturamento realizado</div><div class="value" id="repTotal">R$ 0</div><div class="sub">atendimentos concluídos</div></div>
+        <div class="stat-card gold"><div class="label">Ticket médio</div><div class="value" id="repAvg">R$ 0</div><div class="sub">por atendimento concluído</div></div>
         <div class="stat-card sage"><div class="label">Serviço mais popular</div><div class="value" id="repTop" style="font-size:20px">—</div><div class="sub" id="repTopCount">0 atendimentos</div></div>
       </div>
       <div class="card"><div class="card-title">Atendimentos por mês</div><div id="monthlyChart"></div></div>
@@ -484,7 +488,7 @@ tr:hover td{background:var(--bg)}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
 // ============ FIREBASE ============
 firebase.initializeApp(firebaseConfig);
@@ -589,7 +593,7 @@ async function saveSettings() {
 
 // ============ PIX (EMV/BACEN) ============
 function pixField(id,val){return `${id}${val.length.toString().padStart(2,'0')}${val}`;}
-function crc16(str){let c=0xFFFF;for(let i=0;i<str.length;i++){c^=str.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?(c<<1)^0x1021:c<<1;}return(c&0xFFFF).toString(16).toUpperCase().padStart(4,'0');}
+function crc16(str){let c=0xFFFF;for(let i=0;i<str.length;i++){c^=str.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=((c&0x8000)?((c<<1)^0x1021):(c<<1))&0xFFFF;}return c.toString(16).toUpperCase().padStart(4,'0');}
 function buildPixPayload(key,name,city,amount){
   const gui=pixField('00','br.gov.bcb.pix')+pixField('01',key);
   const add=pixField('05',('AGENDA'+Date.now().toString().slice(-8)).substring(0,25));
@@ -603,26 +607,44 @@ function buildPixPayload(key,name,city,amount){
 function openPixModal(apptId) {
   pixApptId = apptId;
   const a = state.appts.find(x=>x.id===apptId);
-  const s = state.services.find(x=>x.id===a?.serviceId);
-  const c = state.clients.find(x=>x.id===a?.clientId);
-  if (!a||!s||!c) return;
+  const s = a ? state.services.find(x=>x.id===a.serviceId) : null;
+  const c = a ? state.clients.find(x=>x.id===a.clientId) : null;
+  if (!a || !s || !c) { toast('Dados do agendamento não encontrados'); return; }
+
   const content = document.getElementById('pixContent');
+
+  // Abre o modal imediatamente — sem depender de QR
+  document.getElementById('pixModal').classList.add('show');
+
   if (!settings.pixKey) {
     content.innerHTML = `<div class="pix-no-key">⚠️ <strong>Chave PIX não configurada.</strong><br>Acesse <strong>Configurações</strong>, preencha sua chave PIX e salve. Depois clique no botão PIX do agendamento novamente.</div>
     <div class="pix-qr"><div class="pix-amount">${brl(s.price)}</div><div class="pix-lbl">${esc(s.name)} · ${esc(c.name)}</div></div>`;
-    document.getElementById('pixModal').classList.add('show');
     return;
   }
-  const payload = buildPixPayload(settings.pixKey,settings.pixName,settings.pixCity,s.price);
+
+  const payload = buildPixPayload(settings.pixKey, settings.pixName, settings.pixCity, s.price);
   content.innerHTML = `<div class="pix-qr">
     <div class="pix-amount">${brl(s.price)}</div>
     <div class="pix-lbl">${esc(s.name)} · ${esc(c.name)}</div>
-    <canvas id="pixCanvas"></canvas>
+    <div id="pixQrDiv" style="margin:12px auto;text-align:center"></div>
     <div class="pix-code-box" id="pixCodeBox" onclick="copyPix()" title="Clique para copiar">${payload}</div>
     <p style="font-size:11px;color:var(--ink-soft);margin-top:6px">Clique no código para copiar</p>
   </div>`;
-  QRCode.toCanvas(document.getElementById('pixCanvas'),payload,{width:Math.min(220,window.innerWidth-80),margin:2},()=>{});
-  document.getElementById('pixModal').classList.add('show');
+
+  // Gera QR Code com qrcode-generator (fallback: só exibe copia e cola)
+  try {
+    var qr = qrcode(0, 'M');
+    qr.addData(payload);
+    qr.make();
+    var sz = Math.min(210, window.innerWidth - 80);
+    var cs = Math.max(2, Math.floor(sz / qr.getModuleCount()));
+    var qrEl = document.getElementById('pixQrDiv');
+    qrEl.innerHTML = qr.createImgTag(cs, 0);
+    var img = qrEl.querySelector('img');
+    if (img) img.style.cssText = 'max-width:'+sz+'px;width:100%;border-radius:12px;border:2px solid #EDE5E3';
+  } catch(e) {
+    document.getElementById('pixQrDiv').style.display = 'none';
+  }
 }
 function copyPix(){
   const code=document.getElementById('pixCodeBox')?.textContent;
@@ -634,20 +656,38 @@ function copyPix(){
     document.execCommand('copy');toast('Código PIX copiado ✓');
   });
 }
-function sendWaFromPix(){if(pixApptId)sendWhatsApp(pixApptId);}
+function sendWaFromPix(){
+  if(!pixApptId)return;
+  const a=state.appts.find(x=>x.id===pixApptId);
+  const c=a?state.clients.find(x=>x.id===a.clientId):null;
+  const s=a?state.services.find(x=>x.id===a.serviceId):null;
+  if(!a||!c||!s){toast('Dados do agendamento não encontrados');return;}
+  if(!c.phone){toast('Cliente sem telefone cadastrado');return;}
+  const dateBr=a.date.split('-').reverse().join('/');
+  const pixCode=document.getElementById('pixCodeBox')?.textContent||'';
+  let msg=`Olá ${c.name.split(' ')[0]}! 💕\n\nSegue a cobrança do seu atendimento:\n\n✂️ *${s.name}*\n📅 ${dateBr} às ${a.time}\n💰 *${brl(s.price)}*`;
+  if(pixCode){
+    msg+=`\n\n💳 *Pague via PIX – Copia e Cola:*\n${pixCode}\n\n_Copie o código acima e cole no seu app do banco em "PIX → Copia e Cola"._`;
+  }
+  msg+=`\n\nObrigada! 😊`;
+  window.open(`https://wa.me/55${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+}
 
 // ============ WHATSAPP ============
 function sendWhatsApp(apptId){
   const a=state.appts.find(x=>x.id===apptId);
+  if(!a){toast('Agendamento não encontrado');return;}
   const c=state.clients.find(x=>x.id===a.clientId);
   const s=state.services.find(x=>x.id===a.serviceId);
-  if(!c||!c.phone){toast('Cliente sem telefone cadastrado');return;}
+  if(!c||!s){toast('Dados do agendamento incompletos');return;}
+  if(!c.phone){toast('Cliente sem telefone cadastrado');return;}
   const dateBr=a.date.split('-').reverse().join('/');
   const msg=`Olá ${c.name.split(' ')[0]}! 💕\n\nConfirmando seu agendamento:\n\n✂️ *${s.name}*\n📅 ${dateBr} às ${a.time}\n💰 ${brl(s.price)}\n\nAguardo você! 😊`;
   window.open(`https://wa.me/55${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 function wishBday(id){
   const c=state.clients.find(x=>x.id===id);
+  if(!c||!c.phone){toast('Cliente sem telefone cadastrado');return;}
   const msg=`Parabéns, ${c.name.split(' ')[0]}! 🎉🎂 Que seu novo ciclo seja repleto de luz e conquistas! Um presentinho especial te aguarda no próximo atendimento. 💕`;
   window.open(`https://wa.me/55${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
 }
@@ -708,6 +748,15 @@ async function delAppt(id){
   state.appts=state.appts.filter(a=>a.id!==id);
   renderAll();toast('Agendamento cancelado');
 }
+async function toggleDone(id){
+  const a=state.appts.find(x=>x.id===id);
+  if(!a)return;
+  const done=!a.done;
+  await userCol('appts').doc(id).update({done});
+  a.done=done;
+  renderAll();
+  toast(done?'Marcado como concluído ✓':'Marcado como pendente');
+}
 
 // ============ CLIENTS ============
 function openClient(id){
@@ -749,7 +798,9 @@ async function saveService(){
   closeModal('serviceModal');renderAll();toast('Serviço salvo ✓');
 }
 async function delService(id){
-  if(!confirm('Excluir este serviço?'))return;
+  const linked=state.appts.filter(a=>a.serviceId===id).length;
+  if(linked>0&&!confirm(`Este serviço tem ${linked} agendamento(s) vinculado(s). Excluir mesmo assim?`))return;
+  else if(!linked&&!confirm('Excluir este serviço?'))return;
   await userCol('services').doc(id).delete();
   state.services=state.services.filter(s=>s.id!==id);renderAll();
 }
@@ -761,13 +812,16 @@ function renderApptCard(a){
   if(!c||!s)return'';
   const[,m,d]=a.date.split('-');
   const mo=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-  return`<div class="appt">
-    <div class="appt-time"><div class="h">${d}</div><div class="d">${mo[+m-1]}</div></div>
+  const doneCls=a.done?'style="opacity:.6;background:#F0FFF4;border-color:#BBF7D0"':'';
+  const doneNameStyle=a.done?'style="text-decoration:line-through;color:var(--ink-soft)"':'';
+  return`<div class="appt" ${doneCls}>
+    <div class="appt-time" style="${a.done?'background:#D1FAE5;color:#065F46':''}"><div class="h">${d}</div><div class="d">${mo[+m-1]}</div></div>
     <div class="appt-info">
-      <div class="name">${esc(c.name)} · ${a.time}</div>
+      <div class="name" ${doneNameStyle}>${esc(c.name)} · ${a.time}${a.done?' <span style="font-size:10px;background:#D1FAE5;color:#065F46;padding:2px 7px;border-radius:50px;font-weight:700">Concluído</span>':''}</div>
       <div class="svc"><strong>${esc(s.name)}</strong> · ${brl(s.price)}</div>
     </div>
     <div class="appt-actions">
+      <button class="icon-btn" onclick="toggleDone('${a.id}')" title="${a.done?'Marcar como pendente':'Marcar como concluído'}" style="${a.done?'border-color:#10B981;color:#10B981':''}">✓</button>
       ${c.phone?`<button class="icon-btn wa" onclick="sendWhatsApp('${a.id}')" title="WhatsApp">💬</button>`:''}
       <button class="icon-btn pix" onclick="openPixModal('${a.id}')" title="Gerar PIX" style="font-size:11px;font-weight:700;color:#1A9B8D">PIX</button>
       <button class="icon-btn" onclick="openAppt('${a.id}')" title="Editar">✎</button>
@@ -807,11 +861,13 @@ function renderCalendar(){
     const cls=['cal-day',dStr===todayStr?'today':'',dStr===selectedDay?'selected':'',state.appts.some(a=>a.date===dStr)?'has-appt':''].filter(Boolean).join(' ');
     html+=`<div class="${cls}" onclick="selectDay('${dStr}')">${i}</div>`;
   }
+  const trailing=6-last.getDay();
+  for(let i=1;i<=trailing;i++){html+=`<div class="cal-day muted">${i}</div>`;}
   document.getElementById('calGrid').innerHTML=html;
   renderDayAppts();
 }
 function selectDay(d){selectedDay=d;renderCalendar();}
-function changeMonth(n){calDate.setMonth(calDate.getMonth()+n);renderCalendar();}
+function changeMonth(n){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+n,1);renderCalendar();}
 function goToday(){calDate=new Date();selectedDay=new Date().toISOString().split('T')[0];renderCalendar();}
 function renderDayAppts(){
   const[,m,d]=selectedDay.split('-');
@@ -840,15 +896,16 @@ function renderServices(){
 }
 
 function renderReports(){
-  const total=state.appts.reduce((s,a)=>{const sv=state.services.find(x=>x.id===a.serviceId);return s+(sv?sv.price:0);},0);
+  const doneAppts=state.appts.filter(a=>a.done);
+  const total=doneAppts.reduce((s,a)=>{const sv=state.services.find(x=>x.id===a.serviceId);return s+(sv?sv.price:0);},0);
   document.getElementById('repTotal').textContent=brl(total);
-  document.getElementById('repAvg').textContent=brl(state.appts.length?total/state.appts.length:0);
-  const cnt={};state.appts.forEach(a=>{cnt[a.serviceId]=(cnt[a.serviceId]||0)+1;});
+  document.getElementById('repAvg').textContent=brl(doneAppts.length?total/doneAppts.length:0);
+  const cnt={};doneAppts.forEach(a=>{cnt[a.serviceId]=(cnt[a.serviceId]||0)+1;});
   let topId=null,topCount=0;Object.entries(cnt).forEach(([id,c])=>{if(c>topCount){topId=id;topCount=c;}});
   const top=state.services.find(s=>s.id===topId);
   document.getElementById('repTop').textContent=top?top.name:'—';
   document.getElementById('repTopCount').textContent=`${topCount} atendimento${topCount!==1?'s':''}`;
-  const monthly={};state.appts.forEach(a=>{const m=a.date.slice(0,7);monthly[m]=(monthly[m]||0)+1;});
+  const monthly={};doneAppts.forEach(a=>{const m=a.date.slice(0,7);monthly[m]=(monthly[m]||0)+1;});
   const sorted=Object.entries(monthly).sort();
   const max=Math.max(...sorted.map(([,c])=>c),1);
   const box=document.getElementById('monthlyChart');
@@ -858,7 +915,7 @@ function renderReports(){
 }
 
 function exportData(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({...state,settings},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`agenda-backup-${new Date().toISOString().split('T')[0]}.json`;a.click();
   toast('Backup baixado ✓');
 }
