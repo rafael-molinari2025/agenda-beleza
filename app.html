@@ -540,7 +540,18 @@ async function checkSubscription(user) {
   if (user.email === ADMIN_EMAIL) return; // admin always allowed
   try {
     const snap = await db.collection('subscriptions').doc(user.uid).get();
-    if (!snap.exists) return; // pre-subscription user — allow
+    if (!snap.exists) {
+      // Usuário legado: cria documento de assinatura automaticamente
+      await db.collection('subscriptions').doc(user.uid).set({
+        email: user.email,
+        name: user.email.split('@')[0],
+        status: 'trial',
+        createdAt: Date.now(),
+        trialEndsAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        notes: 'Migrado automaticamente'
+      }).catch(() => {});
+      return;
+    }
     const sub = snap.data();
     const now = Date.now();
 

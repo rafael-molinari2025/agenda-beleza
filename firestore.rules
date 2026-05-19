@@ -21,12 +21,13 @@ service cloud.firestore {
       allow read: if request.auth != null
         && (request.auth.uid == userId || isAdmin());
 
-      // Usuário cria apenas a própria, somente com status 'trial'
-      allow create: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.data.status == 'trial'
-        && request.resource.data.email is string
-        && request.resource.data.name is string;
+      // Usuário cria apenas a própria com status 'trial'; admin cria qualquer uma
+      allow create: if isAdmin()
+        || (request.auth != null
+          && request.auth.uid == userId
+          && request.resource.data.status == 'trial'
+          && request.resource.data.email is string
+          && request.resource.data.name is string);
 
       // Usuário pode atualizar apenas o campo lastLoginAt da própria assinatura
       allow update: if request.auth != null
@@ -39,7 +40,10 @@ service cloud.firestore {
 
     // ── Dados do usuário: exige autenticação + assinatura ativa ──
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null
+      // Admin lê dados de qualquer usuário (para painel administrativo)
+      allow read: if isAdmin()
+        || (request.auth != null && request.auth.uid == userId && isActive(userId));
+      allow write: if request.auth != null
         && request.auth.uid == userId
         && (isAdmin() || isActive(userId));
     }

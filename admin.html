@@ -179,16 +179,49 @@ auth.onAuthStateChanged(async user => {
 async function loadSubs() {
   document.getElementById('lastRefresh').textContent = 'Carregando...';
   try {
-    const snap = await db.collection('subscriptions').get();
-    allSubs = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    // Carrega assinaturas existentes
+    const subsSnap = await db.collection('subscriptions').get();
+    const subsMap = {};
+    subsSnap.docs.forEach(d => { subsMap[d.id] = { uid: d.id, ...d.data() }; });
+
+    // Carrega perfis de todos os usuários via collection group (inclui usuários sem assinatura)
+    const profilesSnap = await db.collectionGroup('settings').get();
+    const profileDocs = profilesSnap.docs.filter(d => d.id === 'profile');
+
+    // Mescla: perfil + assinatura (se existir)
+    const seen = new Set();
+    allSubs = profileDocs.map(d => {
+      const uid = d.ref.parent.parent.id;
+      seen.add(uid);
+      const profile = d.data();
+      const sub = subsMap[uid] || {};
+      return {
+        uid,
+        name: sub.name || profile.salonName || uid,
+        email: sub.email || '',
+        status: sub.status || 'legacy',
+        createdAt: sub.createdAt || null,
+        trialEndsAt: sub.trialEndsAt || null,
+        expiresAt: sub.expiresAt || null,
+        notes: sub.notes || '',
+        ...sub,
+        uid
+      };
+    });
+
+    // Adiciona usuários que têm assinatura mas sem perfil (raro)
+    Object.values(subsMap).forEach(sub => {
+      if (!seen.has(sub.uid)) allSubs.push(sub);
+    });
+
     allSubs.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
     updateStats();
     renderTable();
     const now = new Date();
     document.getElementById('lastRefresh').textContent =
-      `${allSubs.length} usuários · atualizado às ${now.toLocaleTimeString('pt-BR')}`;
+      `${allSubs.length} usuário(s) · atualizado às ${now.toLocaleTimeString('pt-BR')}`;
   } catch(e) {
-    document.getElementById('lastRefresh').textContent = 'Erro ao carregar dados.';
+    document.getElementById('lastRefresh').textContent = 'Erro ao carregar dados: ' + e.message;
     console.error(e);
   }
 }
@@ -201,6 +234,13 @@ function updateStats() {
   document.getElementById('stActive').textContent = active;
   document.getElementById('stTrial').textContent = trial;
   document.getElementById('stSuspended').textContent = suspended;
+}
+
+function badgeClass(status) {
+  if (status === 'active') return 'active';
+  if (status === 'suspended') return 'suspended';
+  if (status === 'trial') return 'trial';
+  return 'trial'; // legacy = sem assinatura formal, trata como trial
 }
 
 function renderTable() {
@@ -217,7 +257,7 @@ function renderTable() {
   const rows = list.map(s => {
     const created = s.createdAt ? new Date(s.createdAt).toLocaleDateString('pt-BR') : '—';
     const expiry = expiryDate(s);
-    const badge = `<span class="badge ${s.status}">${labelStatus(s)}</span>`;
+    const badge = `<span class="badge ${badgeClass(s.status)}">${labelStatus(s)}</span>`;
     return `<tr>
       <td><strong>${esc(s.name||'')}</strong><br><span style="color:var(--ink-soft);font-size:12px">${esc(s.email||s.uid)}</span></td>
       <td>${badge}</td>
@@ -243,6 +283,7 @@ function renderTable() {
 function labelStatus(s) {
   if (s.status === 'active') return 'Ativo';
   if (s.status === 'suspended') return 'Suspenso';
+  if (s.status === 'legacy') return 'Sem assinatura';
   if (s.status === 'trial') {
     const days = Math.ceil(((s.trialEndsAt||0) - Date.now()) / 86400000);
     return days > 0 ? `Trial (${days}d)` : 'Trial expirado';
@@ -261,8 +302,12 @@ function expiryDate(s) {
 function esc(s) { return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 async function activate(uid, days) {
+  const sub = allSubs.find(s => s.uid === uid);
   const expiresAt = Date.now() + days * 86400000;
-  await db.collection('subscriptions').doc(uid).update({ status: 'active', expiresAt, updatedAt: Date.now() });
+  await db.collection('subscriptions').doc(uid).set(
+    { email: sub.email||'', name: sub.name||'', status: 'active', expiresAt, updatedAt: Date.now() },
+    { merge: true }
+  );
   toast(`Ativado por ${days} dias`);
   await loadSubs();
 }
@@ -271,14 +316,20 @@ async function renew(uid, days) {
   const sub = allSubs.find(s => s.uid === uid);
   const base = Math.max(sub.expiresAt || Date.now(), Date.now());
   const expiresAt = base + days * 86400000;
-  await db.collection('subscriptions').doc(uid).update({ status: 'active', expiresAt, updatedAt: Date.now() });
+  await db.collection('subscriptions').doc(uid).set(
+    { status: 'active', expiresAt, updatedAt: Date.now() },
+    { merge: true }
+  );
   toast(`Renovado por +${days} dias`);
   await loadSubs();
 }
 
 async function suspend(uid) {
   if (!confirm('Suspender acesso deste usuário?')) return;
-  await db.collection('subscriptions').doc(uid).update({ status: 'suspended', updatedAt: Date.now() });
+  await db.collection('subscriptions').doc(uid).set(
+    { status: 'suspended', updatedAt: Date.now() },
+    { merge: true }
+  );
   toast('Acesso suspenso');
   await loadSubs();
 }
@@ -304,7 +355,7 @@ async function saveEdit() {
   const notes = document.getElementById('editNotes').value.trim();
   const update = { status, notes, updatedAt: Date.now() };
   if (expiryVal) update.expiresAt = new Date(expiryVal).getTime();
-  await db.collection('subscriptions').doc(editingUid).update(update);
+  await db.collection('subscriptions').doc(editingUid).set(update, { merge: true });
   toast('Assinatura atualizada');
   closeEdit();
   await loadSubs();
