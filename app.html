@@ -58,6 +58,7 @@ main{padding:36px 44px;overflow-x:hidden}
   .appt-time .h{font-size:17px}
   .btn{padding:10px 16px;font-size:12px}
   .btn-sm{padding:6px 12px;font-size:11px}
+  .grid-split{grid-template-columns:1fr}
 }
 @media(max-width:400px){
   .stats-grid{grid-template-columns:1fr}
@@ -118,7 +119,7 @@ main{padding:36px 44px;overflow-x:hidden}
 .card-title{font-family:'DM Serif Display';font-size:20px;margin-bottom:16px;letter-spacing:-.3px;display:flex;justify-content:space-between;align-items:center}
 
 /* ====== APPOINTMENT CARD ====== */
-.appt{display:flex;align-items:center;gap:14px;padding:13px;border-radius:12px;border:1px solid var(--line);margin-bottom:10px;transition:.2s}
+.appt{display:flex;align-items:center;gap:14px;padding:13px;border-radius:12px;border:1px solid var(--line);margin-bottom:10px;transition:.2s;flex-wrap:wrap}
 .appt:hover{border-color:var(--accent-soft);background:#FDF8FA}
 .appt-time{text-align:center;min-width:56px;padding:8px;background:var(--accent-soft);color:var(--accent);border-radius:10px;flex-shrink:0}
 .appt-time .h{font-family:'DM Serif Display';font-size:20px;line-height:1}
@@ -133,6 +134,11 @@ main{padding:36px 44px;overflow-x:hidden}
 .icon-btn.wa:hover{border-color:#25D366;color:#25D366}
 .icon-btn.pix:hover{border-color:#32BCAD;color:#32BCAD}
 .icon-btn.del:hover{border-color:#E85D5D;color:#E85D5D}
+@media(max-width:480px){
+  .appt{padding:10px;gap:10px}
+  .appt-actions{width:100%;justify-content:flex-end;padding-top:6px;border-top:1px solid var(--line)}
+  .icon-btn{width:36px;height:36px;font-size:14px}
+}
 
 /* ====== FORMS ====== */
 .field{margin-bottom:16px}
