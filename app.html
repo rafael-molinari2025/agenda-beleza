@@ -588,14 +588,13 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('loadingOverlay').classList.add('hidden');
     return;
   }
-  await loadFromFirestore();
+  try {
+    await loadFromFirestore();
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+  }
   document.getElementById('loadingOverlay').classList.add('hidden');
   renderAll();
-});
-
-// update lastLoginAt on load (non-blocking)
-auth.onAuthStateChanged(user => {
-  if (!user) return;
   db.collection('subscriptions').doc(user.uid).update({ lastLoginAt: Date.now() }).catch(() => {});
 });
 

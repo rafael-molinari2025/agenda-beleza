@@ -10,9 +10,9 @@ service cloud.firestore {
 
     // ── Verifica se a assinatura do usuário está ativa ──
     function isActive(uid) {
-      let sub = get(/databases/$(database)/documents/subscriptions/$(uid));
       // Sem documento = usuário anterior ao sistema de assinaturas → libera acesso
-      return !sub.exists || sub.data.status in ['active', 'trial'];
+      return !exists(/databases/$(database)/documents/subscriptions/$(uid))
+        || get(/databases/$(database)/documents/subscriptions/$(uid)).data.status in ['active', 'trial'];
     }
 
     // ── Coleção de assinaturas ──
