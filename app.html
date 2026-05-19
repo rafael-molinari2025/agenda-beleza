@@ -203,11 +203,36 @@ tr:hover td{background:var(--bg)}
 #loadingOverlay.hidden{opacity:0;pointer-events:none}
 .spinner{width:44px;height:44px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ====== SUBSCRIPTION OVERLAYS ====== */
+#suspendedOverlay{position:fixed;inset:0;background:rgba(42,31,46,.92);z-index:300;display:none;place-items:center;padding:24px}
+#suspendedOverlay.show{display:grid}
+.blocked-card{background:var(--surface);border-radius:24px;padding:48px 40px;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
+.blocked-icon{font-size:52px;margin-bottom:20px}
+.blocked-card h2{font-family:'DM Serif Display';font-size:30px;margin-bottom:12px;color:var(--ink)}
+.blocked-card p{color:var(--ink-soft);font-size:14px;line-height:1.6;margin-bottom:20px}
+.blocked-card .contact{font-size:13px;color:var(--accent);font-weight:600}
+#trialBanner{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1px solid #F59E0B;color:#92400E;padding:10px 20px;font-size:13px;font-weight:600;text-align:center;display:none}
+#trialBanner.show{display:block}
 </style>
 </head>
 <body>
 
 <div id="loadingOverlay"><div class="spinner"></div></div>
+
+<!-- TRIAL BANNER -->
+<div id="trialBanner"></div>
+
+<!-- SUSPENDED OVERLAY -->
+<div id="suspendedOverlay">
+  <div class="blocked-card">
+    <div class="blocked-icon">🔒</div>
+    <h2>Acesso Suspenso</h2>
+    <p id="suspendedMsg">Sua assinatura está suspensa. Entre em contato para reativar o acesso.</p>
+    <p class="contact">sm.servicosetecnologia@gmail.com</p>
+    <button class="btn btn-ghost btn-sm" style="margin-top:20px" onclick="doLogout()">Sair</button>
+  </div>
+</div>
 
 <!-- MOBILE HEADER -->
 <div class="mobile-header">
@@ -254,6 +279,10 @@ tr:hover td{background:var(--bg)}
     <a href="manual.html" target="_blank" class="nav-item" style="text-decoration:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       Manual
+    </a>
+    <a href="admin.html" id="adminLink" class="nav-item" style="text-decoration:none;display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Admin
     </a>
     <button class="nav-item nav-logout" onclick="doLogout()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -505,14 +534,69 @@ let calDate = new Date();
 let selectedDay = new Date().toISOString().split('T')[0];
 
 // ============ AUTH ============
+const ADMIN_EMAIL = 'sm.servicosetecnologia@gmail.com';
+
+async function checkSubscription(user) {
+  if (user.email === ADMIN_EMAIL) return; // admin always allowed
+  try {
+    const snap = await db.collection('subscriptions').doc(user.uid).get();
+    if (!snap.exists) return; // pre-subscription user — allow
+    const sub = snap.data();
+    const now = Date.now();
+
+    if (sub.status === 'suspended') {
+      document.getElementById('suspendedMsg').textContent =
+        'Sua assinatura está suspensa. Entre em contato para regularizar seu acesso.';
+      document.getElementById('suspendedOverlay').classList.add('show');
+      return;
+    }
+
+    if (sub.status === 'active' && sub.expiresAt && sub.expiresAt < now) {
+      document.getElementById('suspendedMsg').textContent =
+        'Sua assinatura expirou. Entre em contato para renovar o acesso.';
+      document.getElementById('suspendedOverlay').classList.add('show');
+      return;
+    }
+
+    if (sub.status === 'trial') {
+      const daysLeft = Math.ceil(((sub.trialEndsAt || 0) - now) / 86400000);
+      if (daysLeft <= 0) {
+        document.getElementById('suspendedMsg').textContent =
+          'Seu período de teste expirou. Entre em contato para ativar sua assinatura.';
+        document.getElementById('suspendedOverlay').classList.add('show');
+        return;
+      }
+      if (daysLeft <= 7) {
+        const banner = document.getElementById('trialBanner');
+        banner.textContent = `⚠️ Período de teste: ${daysLeft} dia(s) restante(s). Entre em contato para ativar sua assinatura.`;
+        banner.classList.add('show');
+      }
+    }
+  } catch(e) {
+    console.warn('Subscription check failed:', e);
+  }
+}
+
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = 'login.html'; return; }
   uid = user.uid;
   document.getElementById('userEmailLabel').textContent = user.email;
   document.getElementById('mobileUserLabel').textContent = user.email;
+  if (user.email === ADMIN_EMAIL) document.getElementById('adminLink').style.display = '';
+  await checkSubscription(user);
+  if (document.getElementById('suspendedOverlay').classList.contains('show')) {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    return;
+  }
   await loadFromFirestore();
   document.getElementById('loadingOverlay').classList.add('hidden');
   renderAll();
+});
+
+// update lastLoginAt on load (non-blocking)
+auth.onAuthStateChanged(user => {
+  if (!user) return;
+  db.collection('subscriptions').doc(user.uid).update({ lastLoginAt: Date.now() }).catch(() => {});
 });
 
 function userCol(col) { return db.collection('users').doc(uid).collection(col); }

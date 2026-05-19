@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "bella-agenda-226f0",
     "public": ".",
     "ignore": [
       "firebase.json",
@@ -17,7 +18,8 @@
     ],
     "rewrites": [
       { "source": "/app", "destination": "/app.html" },
-      { "source": "/manual", "destination": "/manual.html" }
+      { "source": "/manual", "destination": "/manual.html" },
+      { "source": "/admin", "destination": "/admin.html" }
     ],
     "headers": [
       {

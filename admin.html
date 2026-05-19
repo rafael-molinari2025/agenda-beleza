@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belle·Agenda · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F4;--surface:#FFFFFF;--ink:#2A1F2E;--ink-soft:#6B5B6E;--accent:#C9376C;--accent-soft:#F4D5DD;--gold:#B8956A;--line:#EDE5E3;--shadow:0 4px 24px rgba(42,31,46,.06);--shadow-lg:0 12px 40px rgba(42,31,46,.12);--green:#065F46;--green-bg:#D1FAE5;--red:#B91C1C;--red-bg:#FEE2E2;--yellow:#92400E;--yellow-bg:#FEF3C7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:18px 36px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.brand h1{font-family:'DM Serif Display';font-size:26px;letter-spacing:-.5px}
+.brand h1 em{color:var(--accent);font-style:italic}
+.brand p{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+main{max-width:1100px;margin:0 auto;padding:36px 24px}
+h2{font-family:'DM Serif Display';font-size:32px;letter-spacing:-.5px;margin-bottom:6px}
+h2 em{color:var(--accent);font-style:italic}
+.subtitle{color:var(--ink-soft);font-size:14px;margin-bottom:32px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
+.stat .label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:8px}
+.stat .val{font-size:34px;font-weight:700;line-height:1}
+.stat.active .val{color:var(--green)}
+.stat.trial .val{color:var(--gold)}
+.stat.suspended .val{color:var(--red)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.card-header h3{font-size:16px;font-weight:700}
+.search{padding:9px 14px;border:1px solid var(--line);border-radius:50px;font-family:inherit;font-size:13px;width:240px;transition:.2s}
+.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--bg)}
+th{padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-soft);text-align:left;font-weight:600;white-space:nowrap}
+td{padding:14px 16px;font-size:13px;border-top:1px solid var(--line);vertical-align:middle}
+tr:hover td{background:#FAFAFA}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.badge.active{background:var(--green-bg);color:var(--green)}
+.badge.trial{background:var(--yellow-bg);color:var(--yellow)}
+.badge.suspended{background:var(--red-bg);color:var(--red)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:7px 14px;border-radius:50px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;transition:.2s}
+.btn-green{background:var(--green-bg);color:var(--green)}
+.btn-green:hover{background:#A7F3D0}
+.btn-red{background:var(--red-bg);color:var(--red)}
+.btn-red:hover{background:#FECACA}
+.btn-gold{background:#FEF3C7;color:var(--yellow)}
+.btn-gold:hover{background:#FDE68A}
+.btn-ghost{background:var(--bg);color:var(--ink-soft);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--ink);border-color:var(--ink-soft)}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:#A82959}
+.empty{padding:48px;text-align:center;color:var(--ink-soft);font-size:14px}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(42,31,46,.5);z-index:50;display:none;place-items:center;padding:20px}
+.modal-bg.show{display:grid}
+.modal{background:var(--surface);border-radius:20px;padding:32px 28px;width:100%;max-width:420px;box-shadow:var(--shadow-lg)}
+.modal h3{font-family:'DM Serif Display';font-size:24px;margin-bottom:20px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;transition:.2s;background:var(--surface);color:var(--ink);resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+#toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:white;padding:12px 20px;border-radius:50px;font-size:13px;font-weight:600;opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none;z-index:100}
+#toast.show{opacity:1;transform:none}
+#authBlock{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:200}
+.auth-card{background:var(--surface);border-radius:24px;padding:48px 44px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+.auth-card .icon{font-size:40px;margin-bottom:16px}
+.auth-card h2{font-family:'DM Serif Display';font-size:26px;margin-bottom:8px}
+.auth-card p{color:var(--ink-soft);font-size:13px;line-height:1.6}
+@media(max-width:800px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  header{padding:14px 20px}
+  main{padding:24px 16px}
+  th:nth-child(4),td:nth-child(4){display:none}
+  .search{width:100%}
+}
+@media(max-width:500px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  th:nth-child(3),td:nth-child(3){display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="authBlock">
+  <div class="auth-card">
+    <div class="icon">🔐</div>
+    <h2>Área Restrita</h2>
+    <p>Verificando autenticação...</p>
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <h1>Belle<em>·</em>Agenda</h1>
+    <p>Painel Administrativo</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span id="adminEmail" style="font-size:13px;color:var(--ink-soft)"></span>
+    <button class="btn btn-ghost" onclick="doLogout()">Sair</button>
+  </div>
+</header>
+
+<main>
+  <h2>Gestão de <em>Assinaturas</em></h2>
+  <p class="subtitle" id="lastRefresh">Carregando dados...</p>
+
+  <div class="stats-row" id="statsRow">
+    <div class="stat"><div class="label">Total</div><div class="val" id="stTotal">—</div></div>
+    <div class="stat active"><div class="label">Ativos</div><div class="val" id="stActive">—</div></div>
+    <div class="stat trial"><div class="label">Em Teste</div><div class="val" id="stTrial">—</div></div>
+    <div class="stat suspended"><div class="label">Suspensos</div><div class="val" id="stSuspended">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Usuários</h3>
+      <input class="search" id="searchInput" placeholder="Buscar por nome ou e-mail..." oninput="renderTable()">
+    </div>
+    <div id="tableWrap">
+      <div class="empty">Carregando...</div>
+    </div>
+  </div>
+</main>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3>Editar Assinatura</h3>
+    <div class="field"><label>Status</label>
+      <select id="editStatus">
+        <option value="trial">Trial</option>
+        <option value="active">Ativo</option>
+        <option value="suspended">Suspenso</option>
+      </select>
+    </div>
+    <div class="field"><label>Expira em</label>
+      <input type="date" id="editExpiry">
+    </div>
+    <div class="field"><label>Observações</label>
+      <textarea id="editNotes" rows="3" placeholder="Anotações internas..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEdit()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+const ADMIN_EMAIL = 'sm.servicosetecnologia@gmail.com';
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let allSubs = [];
+let editingUid = null;
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  if (user.email !== ADMIN_EMAIL) {
+    document.querySelector('.auth-card p').textContent = 'Acesso negado. Apenas o administrador pode acessar esta área.';
+    return;
+  }
+  document.getElementById('authBlock').style.display = 'none';
+  document.getElementById('adminEmail').textContent = user.email;
+  await loadSubs();
+});
+
+async function loadSubs() {
+  document.getElementById('lastRefresh').textContent = 'Carregando...';
+  try {
+    const snap = await db.collection('subscriptions').get();
+    allSubs = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    allSubs.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    updateStats();
+    renderTable();
+    const now = new Date();
+    document.getElementById('lastRefresh').textContent =
+      `${allSubs.length} usuários · atualizado às ${now.toLocaleTimeString('pt-BR')}`;
+  } catch(e) {
+    document.getElementById('lastRefresh').textContent = 'Erro ao carregar dados.';
+    console.error(e);
+  }
+}
+
+function updateStats() {
+  const active = allSubs.filter(s => s.status === 'active').length;
+  const trial = allSubs.filter(s => s.status === 'trial').length;
+  const suspended = allSubs.filter(s => s.status === 'suspended').length;
+  document.getElementById('stTotal').textContent = allSubs.length;
+  document.getElementById('stActive').textContent = active;
+  document.getElementById('stTrial').textContent = trial;
+  document.getElementById('stSuspended').textContent = suspended;
+}
+
+function renderTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const list = q ? allSubs.filter(s =>
+    (s.name||'').toLowerCase().includes(q) || (s.email||'').toLowerCase().includes(q)
+  ) : allSubs;
+
+  if (!list.length) {
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">Nenhum resultado encontrado.</div>';
+    return;
+  }
+
+  const rows = list.map(s => {
+    const created = s.createdAt ? new Date(s.createdAt).toLocaleDateString('pt-BR') : '—';
+    const expiry = expiryDate(s);
+    const badge = `<span class="badge ${s.status}">${labelStatus(s)}</span>`;
+    return `<tr>
+      <td><strong>${esc(s.name||'')}</strong><br><span style="color:var(--ink-soft);font-size:12px">${esc(s.email||s.uid)}</span></td>
+      <td>${badge}</td>
+      <td>${created}</td>
+      <td>${expiry}</td>
+      <td><div class="actions">
+        <button class="btn btn-green" onclick="activate('${s.uid}',30)">Ativar 30d</button>
+        <button class="btn btn-gold" onclick="renew('${s.uid}',30)">+30d</button>
+        <button class="btn btn-red" onclick="suspend('${s.uid}')">Suspender</button>
+        <button class="btn btn-ghost" onclick="openEdit('${s.uid}')">Editar</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableWrap').innerHTML = `<table>
+    <thead><tr>
+      <th>Usuário</th><th>Status</th><th>Cadastro</th><th>Expira</th><th>Ações</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function labelStatus(s) {
+  if (s.status === 'active') return 'Ativo';
+  if (s.status === 'suspended') return 'Suspenso';
+  if (s.status === 'trial') {
+    const days = Math.ceil(((s.trialEndsAt||0) - Date.now()) / 86400000);
+    return days > 0 ? `Trial (${days}d)` : 'Trial expirado';
+  }
+  return s.status;
+}
+
+function expiryDate(s) {
+  const ts = s.expiresAt || s.trialEndsAt;
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const past = d < new Date();
+  return `<span style="color:${past?'var(--red)':'var(--ink-soft)'}">${d.toLocaleDateString('pt-BR')}</span>`;
+}
+
+function esc(s) { return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+async function activate(uid, days) {
+  const expiresAt = Date.now() + days * 86400000;
+  await db.collection('subscriptions').doc(uid).update({ status: 'active', expiresAt, updatedAt: Date.now() });
+  toast(`Ativado por ${days} dias`);
+  await loadSubs();
+}
+
+async function renew(uid, days) {
+  const sub = allSubs.find(s => s.uid === uid);
+  const base = Math.max(sub.expiresAt || Date.now(), Date.now());
+  const expiresAt = base + days * 86400000;
+  await db.collection('subscriptions').doc(uid).update({ status: 'active', expiresAt, updatedAt: Date.now() });
+  toast(`Renovado por +${days} dias`);
+  await loadSubs();
+}
+
+async function suspend(uid) {
+  if (!confirm('Suspender acesso deste usuário?')) return;
+  await db.collection('subscriptions').doc(uid).update({ status: 'suspended', updatedAt: Date.now() });
+  toast('Acesso suspenso');
+  await loadSubs();
+}
+
+function openEdit(uid) {
+  editingUid = uid;
+  const sub = allSubs.find(s => s.uid === uid);
+  document.getElementById('editStatus').value = sub.status || 'trial';
+  const ts = sub.expiresAt || sub.trialEndsAt;
+  document.getElementById('editExpiry').value = ts ? new Date(ts).toISOString().split('T')[0] : '';
+  document.getElementById('editNotes').value = sub.notes || '';
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeEdit() {
+  document.getElementById('editModal').classList.remove('show');
+  editingUid = null;
+}
+
+async function saveEdit() {
+  const status = document.getElementById('editStatus').value;
+  const expiryVal = document.getElementById('editExpiry').value;
+  const notes = document.getElementById('editNotes').value.trim();
+  const update = { status, notes, updatedAt: Date.now() };
+  if (expiryVal) update.expiresAt = new Date(expiryVal).getTime();
+  await db.collection('subscriptions').doc(editingUid).update(update);
+  toast('Assinatura atualizada');
+  closeEdit();
+  await loadSubs();
+}
+
+function doLogout() { auth.signOut().then(() => window.location.href = 'login.html'); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

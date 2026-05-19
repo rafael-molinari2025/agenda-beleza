@@ -1,9 +1,47 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Cada usuário só acessa seus próprios dados
+
+    // ── Admin identificado pelo e-mail no token JWT (server-side) ──
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'sm.servicosetecnologia@gmail.com';
+    }
+
+    // ── Verifica se a assinatura do usuário está ativa ──
+    function isActive(uid) {
+      let sub = get(/databases/$(database)/documents/subscriptions/$(uid));
+      // Sem documento = usuário anterior ao sistema de assinaturas → libera acesso
+      return !sub.exists || sub.data.status in ['active', 'trial'];
+    }
+
+    // ── Coleção de assinaturas ──
+    match /subscriptions/{userId} {
+      // Usuário lê a própria; admin lê todas
+      allow read: if request.auth != null
+        && (request.auth.uid == userId || isAdmin());
+
+      // Usuário cria apenas a própria, somente com status 'trial'
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.status == 'trial'
+        && request.resource.data.email is string
+        && request.resource.data.name is string;
+
+      // Usuário pode atualizar apenas o campo lastLoginAt da própria assinatura
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt']);
+
+      // Apenas admin pode suspender, ativar, renovar ou excluir
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Dados do usuário: exige autenticação + assinatura ativa ──
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId
+        && (isAdmin() || isActive(userId));
     }
   }
 }
