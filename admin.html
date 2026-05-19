@@ -70,7 +70,7 @@ tr:hover td{background:#FAFAFA}
 .auth-card .icon{font-size:40px;margin-bottom:16px}
 .auth-card h2{font-family:'DM Serif Display';font-size:26px;margin-bottom:8px}
 .auth-card p{color:var(--ink-soft);font-size:13px;line-height:1.6}
-@media(max-width:800px){
+@media(max-width:900px){
   .stats-row{grid-template-columns:1fr 1fr}
   header{padding:14px 16px}
   main{padding:20px 14px}
@@ -78,9 +78,13 @@ tr:hover td{background:#FAFAFA}
   /* Esconde tabela no mobile — usa cards */
   .table-desktop{display:none}
 }
-@media(min-width:801px){
+@media(min-width:901px){
   /* Esconde cards no desktop — usa tabela */
   .cards-mobile{display:none}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr}
+  main{padding:14px 12px}
 }
 /* ====== USER CARDS (mobile) ====== */
 .cards-mobile{display:flex;flex-direction:column;gap:12px;padding:16px}
