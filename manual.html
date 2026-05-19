@@ -73,9 +73,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   .feature-grid{grid-template-columns:1fr}
 }
 @media(max-width:600px){
-  .content{padding:20px 16px}
-  .content h1{font-size:28px}
-  .section h2{font-size:26px}
+  body{overflow-x:hidden}
+  .layout{width:100%;overflow-x:hidden}
+  .content{padding:16px 14px;max-width:100%;word-break:break-word;overflow-wrap:break-word}
+  .content h1{font-size:26px;letter-spacing:-.5px}
+  .content .subtitle{font-size:14px;margin-bottom:24px}
+  .section{margin-bottom:36px}
+  .section h2{font-size:22px;flex-wrap:wrap;gap:8px}
+  .section h2 .icon{width:28px;height:28px}
+  .section h2 .icon svg{width:14px;height:14px}
   .top-bar{padding:12px 14px}
   .brand small{display:none}
   .btn-label{display:none}
