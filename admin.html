@@ -72,8 +72,9 @@ tr:hover td{background:#FAFAFA}
 .auth-card p{color:var(--ink-soft);font-size:13px;line-height:1.6}
 @media(max-width:900px){
   .stats-row{grid-template-columns:1fr 1fr}
-  header{padding:14px 16px}
-  main{padding:20px 14px}
+  header{padding:14px 20px}
+  main{padding:20px 20px}
+  h2{font-size:26px}
   .search{width:100%}
   /* Esconde tabela no mobile — usa cards */
   .table-desktop{display:none}
@@ -82,9 +83,13 @@ tr:hover td{background:#FAFAFA}
   /* Esconde cards no desktop — usa tabela */
   .cards-mobile{display:none}
 }
-@media(max-width:480px){
+@media(max-width:600px){
+  body{overflow-x:hidden}
   .stats-row{grid-template-columns:1fr}
-  main{padding:14px 12px}
+  header{padding:12px 14px}
+  main{padding:16px 14px;word-break:break-word;overflow-wrap:break-word}
+  h2{font-size:22px}
+  .subtitle{margin-bottom:20px}
 }
 /* ====== USER CARDS (mobile) ====== */
 .cards-mobile{display:flex;flex-direction:column;gap:12px;padding:16px}
