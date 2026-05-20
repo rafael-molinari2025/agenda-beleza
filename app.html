@@ -237,10 +237,11 @@ tr:hover td{background:var(--bg)}
 <div id="suspendedOverlay">
   <div class="blocked-card">
     <div class="blocked-icon">🔒</div>
-    <h2>Acesso Suspenso</h2>
-    <p id="suspendedMsg">Sua assinatura está suspensa. Entre em contato para reativar o acesso.</p>
-    <p class="contact">sm.servicosetecnologia@gmail.com</p>
-    <button class="btn btn-ghost btn-sm" style="margin-top:20px" onclick="doLogout()">Sair</button>
+    <h2>Acesso Bloqueado</h2>
+    <p id="suspendedMsg">Seu período de teste encerrou. Escolha um plano para continuar.</p>
+    <a href="landing.html#precos" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:12px">Ver planos e contratar</a>
+    <p class="contact">Dúvidas? <a href="mailto:sm.servicosetecnologia@gmail.com" style="color:inherit">sm.servicosetecnologia@gmail.com</a></p>
+    <button class="btn btn-ghost btn-sm" style="margin-top:16px" onclick="doLogout()">Sair da conta</button>
   </div>
 </div>
 
@@ -569,7 +570,7 @@ async function checkSubscription(user) {
         name: user.email.split('@')[0],
         status: 'trial',
         createdAt: Date.now(),
-        trialEndsAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        trialEndsAt: Date.now() + 15 * 24 * 60 * 60 * 1000,
         notes: 'Migrado automaticamente'
       }).catch(() => {});
       return;
@@ -586,7 +587,7 @@ async function checkSubscription(user) {
 
     if (sub.status === 'active' && sub.expiresAt && sub.expiresAt < now) {
       document.getElementById('suspendedMsg').textContent =
-        'Sua assinatura expirou. Entre em contato para renovar o acesso.';
+        'Sua assinatura expirou. Escolha um plano para continuar usando o Belle·Agenda.';
       document.getElementById('suspendedOverlay').classList.add('show');
       return;
     }
@@ -595,13 +596,13 @@ async function checkSubscription(user) {
       const daysLeft = Math.ceil(((sub.trialEndsAt || 0) - now) / 86400000);
       if (daysLeft <= 0) {
         document.getElementById('suspendedMsg').textContent =
-          'Seu período de teste expirou. Entre em contato para ativar sua assinatura.';
+          'Seu período de teste de 15 dias encerrou. Escolha um plano para continuar usando o Belle·Agenda.';
         document.getElementById('suspendedOverlay').classList.add('show');
         return;
       }
-      if (daysLeft <= 7) {
+      if (daysLeft <= 5) {
         const banner = document.getElementById('trialBanner');
-        banner.textContent = `⚠️ Período de teste: ${daysLeft} dia(s) restante(s). Entre em contato para ativar sua assinatura.`;
+        banner.innerHTML = `⚠️ Seu período de teste expira em <strong>${daysLeft} dia(s)</strong>. <a href="landing.html#precos" style="color:inherit;text-decoration:underline;font-weight:700">Contrate um plano agora</a> para não perder o acesso.`;
         banner.classList.add('show');
       }
     }

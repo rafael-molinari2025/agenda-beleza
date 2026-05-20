@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belle·Agenda — Sistema para Salões de Beleza e Saúde</title>
+<meta name="description" content="Sistema completo de gestão para salões de beleza e profissionais de saúde. Agenda, clientes, PIX automático e WhatsApp integrados. Comece grátis por 15 dias.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ====== RESET & VARS ====== */
+:root{
+  --bg:#FAF7F4;--surface:#FFFFFF;--ink:#2A1F2E;--ink-soft:#6B5B6E;
+  --accent:#C9376C;--accent-soft:#F4D5DD;--accent-dark:#A82959;
+  --gold:#B8956A;--gold-soft:rgba(184,149,106,.15);
+  --sage:#8DA88E;--line:#EDE5E3;
+  --shadow:0 4px 24px rgba(42,31,46,.06);--shadow-lg:0 12px 40px rgba(42,31,46,.12);
+  --shadow-xl:0 24px 64px rgba(42,31,46,.18);
+  --radius:16px;--radius-lg:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;height:auto}
+
+/* ====== TYPOGRAPHY ====== */
+.serif{font-family:'DM Serif Display',serif}
+
+/* ====== BUTTONS ====== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 26px;border-radius:50px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;transition:.22s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,55,108,.35)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-lg{padding:16px 36px;font-size:15px}
+.btn-xl{padding:18px 48px;font-size:16px}
+.btn-wa{background:#25D366;color:#fff}
+.btn-wa:hover{background:#1DA851;transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,.35)}
+
+/* ====== LAYOUT ====== */
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+section{padding:80px 0}
+
+/* ====== HEADER ====== */
+#header{position:sticky;top:0;z-index:100;background:rgba(250,247,244,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);transition:.3s}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;max-width:1120px;margin:0 auto;gap:16px}
+.header-brand{font-family:'DM Serif Display';font-size:22px;letter-spacing:-.3px;flex-shrink:0}
+.header-brand em{color:var(--accent);font-style:italic}
+.header-nav{display:flex;gap:28px;align-items:center}
+.header-nav a{font-size:13px;font-weight:600;color:var(--ink-soft);transition:.2s}
+.header-nav a:hover{color:var(--accent)}
+.header-actions{display:flex;gap:10px;align-items:center;flex-shrink:0}
+.header-login{font-size:13px;font-weight:600;color:var(--ink-soft);transition:.2s}
+.header-login:hover{color:var(--accent)}
+
+/* ====== HERO ====== */
+.hero{padding:100px 0 80px;background:linear-gradient(160deg,#fff 0%,var(--bg) 60%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-120px;right:-120px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(244,213,221,.6) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(184,149,106,.12) 0%,transparent 70%);pointer-events:none}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:var(--accent);padding:6px 14px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:22px}
+.hero-badge span{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+.hero h1{font-family:'DM Serif Display';font-size:52px;line-height:1.05;letter-spacing:-1.5px;margin-bottom:20px}
+.hero h1 em{color:var(--accent);font-style:italic}
+.hero-sub{font-size:17px;line-height:1.65;color:var(--ink-soft);margin-bottom:36px;max-width:480px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.hero-trust{display:flex;gap:20px;flex-wrap:wrap}
+.hero-trust-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);font-weight:600}
+.hero-trust-item svg{color:var(--accent);flex-shrink:0}
+
+/* Hero card mockup */
+.hero-visual{position:relative}
+.mockup-card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);padding:24px;border:1px solid var(--line)}
+.mockup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mockup-title{font-family:'DM Serif Display';font-size:18px}
+.mockup-title em{color:var(--accent);font-style:italic}
+.mockup-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.mockup-stat{background:var(--bg);border-radius:12px;padding:12px 14px}
+.mockup-stat .m-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px;font-weight:600}
+.mockup-stat .m-val{font-family:'DM Serif Display';font-size:24px;line-height:1}
+.mockup-appt{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--line);margin-bottom:8px}
+.mockup-time{background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:6px 8px;text-align:center;min-width:48px}
+.mockup-time .t{font-family:'DM Serif Display';font-size:16px;line-height:1}
+.mockup-time .d{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-top:1px}
+.mockup-appt-info{flex:1}
+.mockup-appt-info .n{font-size:12px;font-weight:700;margin-bottom:2px}
+.mockup-appt-info .s{font-size:10px;color:var(--ink-soft)}
+.mockup-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:50px;font-size:9px;font-weight:700}
+.mockup-chip.pix{background:rgba(50,188,173,.15);color:#1A9B8D}
+.mockup-chip.wa{background:rgba(37,211,102,.15);color:#1DA851}
+.mockup-float{position:absolute;background:var(--surface);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow-lg);border:1px solid var(--line);font-size:12px;font-weight:600}
+.mockup-float.f1{top:-20px;right:-20px;display:flex;align-items:center;gap:8px}
+.mockup-float.f2{bottom:-16px;left:-16px;display:flex;align-items:center;gap:8px}
+.mockup-float .ico{font-size:18px}
+.mockup-float .txt .lbl{font-size:10px;color:var(--ink-soft);font-weight:500}
+.mockup-float .txt .val{font-size:14px;font-weight:700;color:var(--accent)}
+
+/* ====== LOGOS / TRUST ====== */
+.trust-bar{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:24px 0}
+.trust-bar-inner{display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:13px;font-weight:600}
+.trust-item svg{color:var(--gold)}
+
+/* ====== SECTION LABELS ====== */
+.section-label{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;border-radius:50px;margin-bottom:14px}
+.section-title{font-family:'DM Serif Display';font-size:40px;letter-spacing:-1px;line-height:1.1;margin-bottom:14px}
+.section-title em{color:var(--accent);font-style:italic}
+.section-sub{font-size:16px;color:var(--ink-soft);line-height:1.65;max-width:560px}
+.section-head{margin-bottom:52px}
+.section-head.center{text-align:center}
+.section-head.center .section-sub{margin:0 auto}
+
+/* ====== FEATURES ====== */
+.features{background:var(--bg)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);transition:.25s}
+.feat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--accent-soft)}
+.feat-icon{width:48px;height:48px;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;font-size:22px;margin-bottom:18px}
+.feat-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.feat-card p{font-size:13px;color:var(--ink-soft);line-height:1.6}
+
+/* ====== HOW IT WORKS ====== */
+.how{background:var(--surface)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;position:relative}
+.steps-grid::before{content:'';position:absolute;top:36px;left:calc(16.66% + 16px);right:calc(16.66% + 16px);height:2px;background:linear-gradient(90deg,var(--accent-soft),var(--accent),var(--accent-soft));border-radius:2px}
+.step-item{text-align:center;position:relative}
+.step-num{width:72px;height:72px;border-radius:50%;background:var(--accent);color:#fff;font-family:'DM Serif Display';font-size:28px;display:grid;place-items:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(201,55,108,.3)}
+.step-item h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.step-item p{font-size:13px;color:var(--ink-soft);line-height:1.6}
+
+/* ====== PRICING ====== */
+.pricing{background:var(--bg)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
+.plan-card{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:36px 28px;position:relative;transition:.25s}
+.plan-card:hover{box-shadow:var(--shadow-lg)}
+.plan-card.featured{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow-lg)}
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;padding:5px 16px;border-radius:50px;white-space:nowrap}
+.plan-name{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.plan-price{display:flex;align-items:flex-end;gap:4px;margin-bottom:4px}
+.plan-price .amount{font-family:'DM Serif Display';font-size:48px;line-height:1;color:var(--ink)}
+.plan-price .currency{font-size:18px;font-weight:700;color:var(--ink-soft);margin-bottom:10px}
+.plan-price .period{font-size:13px;color:var(--ink-soft);margin-bottom:8px}
+.plan-total{font-size:12px;color:var(--ink-soft);margin-bottom:6px;min-height:18px}
+.plan-economy{display:inline-block;background:var(--gold-soft);color:var(--gold);font-size:11px;font-weight:700;padding:3px 10px;border-radius:50px;margin-bottom:24px;min-height:22px}
+.plan-divider{height:1px;background:var(--line);margin-bottom:24px}
+.plan-features{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft)}
+.plan-features li::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0;margin-top:1px}
+.plan-cta{width:100%;text-align:center}
+.plan-trial{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:12px}
+
+/* ====== PAYMENT METHOD ====== */
+.payment{background:var(--surface)}
+.payment-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.pay-step{text-align:center}
+.pay-step-num{width:52px;height:52px;border-radius:50%;background:var(--bg);border:2px solid var(--line);font-family:'DM Serif Display';font-size:22px;display:grid;place-items:center;margin:0 auto 14px;color:var(--accent)}
+.pay-step h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.pay-step p{font-size:12px;color:var(--ink-soft);line-height:1.6}
+.payment-note{margin-top:36px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px;display:flex;gap:14px;align-items:flex-start;font-size:13px;color:var(--ink-soft);line-height:1.6}
+.payment-note strong{color:var(--ink)}
+
+/* ====== FAQ ====== */
+.faq{background:var(--bg)}
+.faq-list{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:.2s}
+details[open]{box-shadow:var(--shadow)}
+details[open] summary{border-bottom:1px solid var(--line)}
+summary{padding:18px 22px;font-size:15px;font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-size:20px;color:var(--accent);font-weight:300;flex-shrink:0;transition:.2s}
+details[open] summary::after{content:'−'}
+.faq-body{padding:16px 22px;font-size:14px;color:var(--ink-soft);line-height:1.75}
+.faq-body strong{color:var(--ink)}
+
+/* ====== FINAL CTA ====== */
+.final-cta{background:linear-gradient(135deg,var(--ink) 0%,#4A3050 100%);padding:100px 0;text-align:center;position:relative;overflow:hidden}
+.final-cta::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:rgba(201,55,108,.15);pointer-events:none}
+.final-cta h2{font-family:'DM Serif Display';font-size:44px;letter-spacing:-1px;color:#fff;margin-bottom:16px;position:relative}
+.final-cta h2 em{color:var(--accent-soft);font-style:italic}
+.final-cta p{font-size:17px;color:rgba(255,255,255,.7);margin-bottom:40px;position:relative}
+.final-cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+.btn-light{background:#fff;color:var(--ink)}
+.btn-light:hover{background:var(--bg);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+
+/* ====== FOOTER ====== */
+footer{background:var(--ink);color:rgba(255,255,255,.6);padding:40px 0}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-brand{font-family:'DM Serif Display';font-size:20px;color:#fff}
+.footer-brand em{color:var(--accent-soft);font-style:italic}
+.footer-links{display:flex;gap:20px;font-size:12px}
+.footer-links a{color:rgba(255,255,255,.5);transition:.2s}
+.footer-links a:hover{color:#fff}
+.footer-copy{font-size:12px;width:100%;text-align:center;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px}
+
+/* ====== RESPONSIVE ====== */
+@media(max-width:900px){
+  section{padding:60px 0}
+  .hero{padding:60px 0 50px}
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .hero h1{font-size:38px}
+  .hero-visual{order:-1}
+  .mockup-float.f1{top:-10px;right:-6px}
+  .mockup-float.f2{bottom:-10px;left:-6px}
+  .features-grid{grid-template-columns:1fr 1fr}
+  .steps-grid{grid-template-columns:1fr;gap:32px}
+  .steps-grid::before{display:none}
+  .pricing-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}
+  .payment-steps{grid-template-columns:1fr 1fr;gap:24px}
+  .section-title{font-size:32px}
+  .final-cta{padding:72px 0}
+  .final-cta h2{font-size:34px}
+  .header-nav{display:none}
+}
+@media(max-width:600px){
+  .container{padding:0 16px}
+  .hero h1{font-size:30px}
+  .hero-sub{font-size:15px}
+  .hero-cta{flex-direction:column}
+  .hero-cta .btn{width:100%;justify-content:center}
+  .features-grid{grid-template-columns:1fr}
+  .payment-steps{grid-template-columns:1fr}
+  .trust-bar-inner{gap:24px}
+  .footer-inner{flex-direction:column;text-align:center}
+  .footer-links{justify-content:center}
+  .final-cta-btns{flex-direction:column;align-items:center}
+  .final-cta-btns .btn{width:100%;max-width:320px}
+  .header-actions .btn-ghost{display:none}
+  .plan-price .amount{font-size:40px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="header-inner">
+    <a href="#" class="header-brand">Belle<em>·</em>Agenda</a>
+    <nav class="header-nav">
+      <a href="#funcionalidades">Funcionalidades</a>
+      <a href="#precos">Preços</a>
+      <a href="#como-contratar">Como contratar</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <a href="login.html" class="header-login">Já tenho conta</a>
+      <a href="login.html" class="btn btn-primary">Começar grátis</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span></span> 15 dias grátis — sem cartão de crédito
+        </div>
+        <h1>Organize sua agenda.<br>Fidelize suas <em>clientes</em>.<br>Aumente seu faturamento.</h1>
+        <p class="hero-sub">Sistema completo para salões de beleza e profissionais de saúde. Agenda, clientes, PIX automático e WhatsApp — tudo em um só lugar, no celular ou computador.</p>
+        <div class="hero-cta">
+          <a href="login.html" class="btn btn-primary btn-lg">Criar conta grátis</a>
+          <a href="#precos" class="btn btn-ghost btn-lg">Ver planos →</a>
+        </div>
+        <div class="hero-trust">
+          <div class="hero-trust-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            Sem cartão de crédito
+          </div>
+          <div class="hero-trust-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            15 dias grátis
+          </div>
+          <div class="hero-trust-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            Cancele quando quiser
+          </div>
+        </div>
+      </div>
+
+      <!-- Mockup visual -->
+      <div class="hero-visual">
+        <div class="mockup-float f1">
+          <div class="ico">💳</div>
+          <div class="txt">
+            <div class="lbl">PIX gerado</div>
+            <div class="val">R$ 80,00</div>
+          </div>
+        </div>
+        <div class="mockup-card">
+          <div class="mockup-header">
+            <span class="serif" style="font-size:16px">Belle<em style="color:var(--accent)">·</em>Agenda</span>
+            <span style="font-size:11px;color:var(--ink-soft);font-weight:600">HOJ, 20 MAI</span>
+          </div>
+          <div class="mockup-stats">
+            <div class="mockup-stat">
+              <div class="m-label">Hoje</div>
+              <div class="m-val" style="color:var(--accent)">5</div>
+            </div>
+            <div class="mockup-stat">
+              <div class="m-label">Faturamento</div>
+              <div class="m-val" style="color:var(--gold);font-size:18px">R$1.840</div>
+            </div>
+          </div>
+          <div class="mockup-appt">
+            <div class="mockup-time"><div class="t">09</div><div class="d">MAI</div></div>
+            <div class="mockup-appt-info">
+              <div class="n">Ana Paula Souza</div>
+              <div class="s">Coloração + Escova · R$ 180,00</div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <span class="mockup-chip wa">💬 WA</span>
+              <span class="mockup-chip pix">PIX</span>
+            </div>
+          </div>
+          <div class="mockup-appt">
+            <div class="mockup-time"><div class="t">11</div><div class="d">MAI</div></div>
+            <div class="mockup-appt-info">
+              <div class="n">Fernanda Lima</div>
+              <div class="s">Manicure + Pedicure · R$ 60,00</div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <span class="mockup-chip wa">💬 WA</span>
+              <span class="mockup-chip pix">PIX</span>
+            </div>
+          </div>
+          <div class="mockup-appt">
+            <div class="mockup-time"><div class="t">14</div><div class="d">MAI</div></div>
+            <div class="mockup-appt-info">
+              <div class="n">Juliana Costa</div>
+              <div class="s">Corte Feminino · R$ 80,00</div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <span class="mockup-chip wa">💬 WA</span>
+              <span class="mockup-chip pix">PIX</span>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-float f2">
+          <div class="ico">🎂</div>
+          <div class="txt">
+            <div class="lbl">Aniversariante hoje</div>
+            <div class="val">Maria Helena</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Dados seguros no Firebase (Google)
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5h20v14H2zm18 12V7H4v10h16zM9 9h6v2H9z"/></svg>
+      PIX padrão Banco Central
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18" stroke="white" stroke-width="2"/></svg>
+      Funciona no celular e computador
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Sem instalação necessária
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="funcionalidades" class="features">
+  <div class="container">
+    <div class="section-head center">
+      <span class="section-label">Funcionalidades</span>
+      <h2 class="section-title">Tudo que seu salão <em>precisa</em></h2>
+      <p class="section-sub">Desenvolvido especialmente para profissionais da beleza e saúde. Simples de usar, poderoso nos resultados.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">📅</div>
+        <h3>Agenda Inteligente</h3>
+        <p>Calendário visual com todos os agendamentos do mês. Navegue por datas, veja os horários livres e crie novos agendamentos com poucos toques.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">👥</div>
+        <h3>Gestão de Clientes</h3>
+        <p>Cadastro completo com histórico de atendimentos, telefone, aniversário e anotações. Alertas automáticos de aniversariantes do mês.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💳</div>
+        <h3>PIX Automático</h3>
+        <p>Gera QR Code PIX no padrão oficial do Banco Central para cada atendimento. Valor preenchido automaticamente, funciona em todos os bancos.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💬</div>
+        <h3>WhatsApp Integrado</h3>
+        <p>Envie confirmação de agendamento e mensagem de parabéns de aniversário direto para o WhatsApp da cliente, com um único toque.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>Relatórios Financeiros</h3>
+        <p>Acompanhe faturamento realizado, ticket médio por atendimento, serviço mais popular e histórico mensal de atendimentos.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">☁️</div>
+        <h3>Dados na Nuvem</h3>
+        <p>Seus dados ficam salvos no Firebase (Google Cloud). Acesse de qualquer dispositivo com o mesmo login, com total segurança e privacidade.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="container">
+    <div class="section-head center">
+      <span class="section-label">Como funciona</span>
+      <h2 class="section-title">Em 3 passos você já <em>está atendendo</em></h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <h3>Crie sua conta grátis</h3>
+        <p>Em menos de 1 minuto, sem cartão de crédito. Você começa com 15 dias de teste completo e gratuito.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <h3>Configure seu salão</h3>
+        <p>Cadastre seus serviços com preços, suas clientes e as configurações de PIX. Tudo simples e intuitivo.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <h3>Comece a atender</h3>
+        <p>Agende, envie confirmações pelo WhatsApp, gere o PIX na hora e acompanhe seu faturamento crescer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="precos" class="pricing">
+  <div class="container">
+    <div class="section-head center">
+      <span class="section-label">Planos e Preços</span>
+      <h2 class="section-title">Invista no crescimento do <em>seu negócio</em></h2>
+      <p class="section-sub">Todos os planos incluem acesso completo a todas as funcionalidades. Sem taxas ocultas.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <!-- MENSAL -->
+      <div class="plan-card">
+        <div class="plan-name">Mensal</div>
+        <div class="plan-price">
+          <span class="currency">R$</span>
+          <span class="amount">39</span>
+          <span class="period">,90<br>/mês</span>
+        </div>
+        <div class="plan-total">&nbsp;</div>
+        <div class="plan-economy">&nbsp;</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li>Agendamentos ilimitados</li>
+          <li>Clientes ilimitados</li>
+          <li>Serviços ilimitados</li>
+          <li>PIX automático (padrão BACEN)</li>
+          <li>Integração WhatsApp</li>
+          <li>Relatórios financeiros</li>
+          <li>Backup de dados</li>
+          <li>Suporte via e-mail</li>
+        </ul>
+        <a id="btn-mensal" href="#" class="btn btn-ghost plan-cta" onclick="contratar('Mensal','R$ 39,90/mês');return false">Contratar plano mensal</a>
+        <p class="plan-trial">15 dias grátis para experimentar</p>
+      </div>
+
+      <!-- SEMESTRAL (FEATURED) -->
+      <div class="plan-card featured">
+        <div class="plan-badge">⭐ Mais popular</div>
+        <div class="plan-name">Semestral</div>
+        <div class="plan-price">
+          <span class="currency">R$</span>
+          <span class="amount">29</span>
+          <span class="period">,90<br>/mês</span>
+        </div>
+        <div class="plan-total">R$ 179,40 cobrado à vista</div>
+        <div class="plan-economy">Economia de R$ 60,00</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li>Agendamentos ilimitados</li>
+          <li>Clientes ilimitados</li>
+          <li>Serviços ilimitados</li>
+          <li>PIX automático (padrão BACEN)</li>
+          <li>Integração WhatsApp</li>
+          <li>Relatórios financeiros</li>
+          <li>Backup de dados</li>
+          <li>Suporte prioritário via WhatsApp</li>
+        </ul>
+        <a id="btn-semestral" href="#" class="btn btn-primary plan-cta" onclick="contratar('Semestral','R$ 179,40 (6 meses)');return false">Contratar plano semestral</a>
+        <p class="plan-trial">15 dias grátis para experimentar</p>
+      </div>
+
+      <!-- ANUAL -->
+      <div class="plan-card">
+        <div class="plan-badge" style="background:var(--gold)">💎 Melhor valor</div>
+        <div class="plan-name">Anual</div>
+        <div class="plan-price">
+          <span class="currency">R$</span>
+          <span class="amount">19</span>
+          <span class="period">,90<br>/mês</span>
+        </div>
+        <div class="plan-total">R$ 238,80 cobrado à vista</div>
+        <div class="plan-economy">Economia de R$ 240,00</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li>Agendamentos ilimitados</li>
+          <li>Clientes ilimitados</li>
+          <li>Serviços ilimitados</li>
+          <li>PIX automático (padrão BACEN)</li>
+          <li>Integração WhatsApp</li>
+          <li>Relatórios financeiros</li>
+          <li>Backup de dados</li>
+          <li>Suporte prioritário via WhatsApp</li>
+        </ul>
+        <a id="btn-anual" href="#" class="btn btn-ghost plan-cta" onclick="contratar('Anual','R$ 238,80 (12 meses)');return false">Contratar plano anual</a>
+        <p class="plan-trial">15 dias grátis para experimentar</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO PAY -->
+<section id="como-contratar" class="payment">
+  <div class="container">
+    <div class="section-head center">
+      <span class="section-label">Como contratar</span>
+      <h2 class="section-title">Simples, rápido e <em>seguro</em></h2>
+      <p class="section-sub">Pagamento via PIX. Ativação em minutos após a confirmação.</p>
+    </div>
+    <div class="payment-steps">
+      <div class="pay-step">
+        <div class="pay-step-num">1</div>
+        <h4>Escolha seu plano</h4>
+        <p>Selecione o plano ideal para o seu negócio e clique em "Contratar".</p>
+      </div>
+      <div class="pay-step">
+        <div class="pay-step-num">2</div>
+        <h4>Entre em contato</h4>
+        <p>Você será direcionado ao WhatsApp com os detalhes do plano escolhido.</p>
+      </div>
+      <div class="pay-step">
+        <div class="pay-step-num">3</div>
+        <h4>Realize o pagamento</h4>
+        <p>Envie o valor via PIX para a chave que será informada no WhatsApp.</p>
+      </div>
+      <div class="pay-step">
+        <div class="pay-step-num">4</div>
+        <h4>Acesso ativado!</h4>
+        <p>Em minutos após o comprovante, seu acesso é ativado e você já pode usar.</p>
+      </div>
+    </div>
+    <div class="payment-note">
+      <span style="font-size:22px;flex-shrink:0">💡</span>
+      <span><strong>Já tem uma conta de teste?</strong> Crie sua conta grátis, use os 15 dias e só pague se gostar. Após a contratação, enviamos a confirmação de ativação pelo mesmo WhatsApp.</span>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="faq">
+  <div class="container">
+    <div class="section-head center">
+      <span class="section-label">Dúvidas frequentes</span>
+      <h2 class="section-title">Perguntas <em>frequentes</em></h2>
+    </div>
+    <div class="faq-list">
+      <details open>
+        <summary>Como funciona o período de teste?</summary>
+        <div class="faq-body">Ao criar sua conta, você tem <strong>15 dias de acesso completo e gratuito</strong>, sem precisar informar cartão de crédito. Durante esse período, você usa todas as funcionalidades sem restrição. Ao final dos 15 dias, o acesso é bloqueado até que um plano seja contratado.</div>
+      </details>
+      <details>
+        <summary>Como faço para contratar um plano?</summary>
+        <div class="faq-body">Escolha o plano desejado nesta página e clique em "Contratar". Você será direcionado ao WhatsApp onde informaremos a chave PIX para pagamento. Após o envio do comprovante, seu acesso é ativado <strong>em minutos</strong>.</div>
+      </details>
+      <details>
+        <summary>O sistema funciona no celular?</summary>
+        <div class="faq-body">Sim! O Belle·Agenda foi desenvolvido para funcionar perfeitamente no celular, tablet e computador. Não precisa instalar nada — basta abrir no navegador. Você pode até <strong>adicionar o sistema à tela inicial</strong> do seu celular como se fosse um aplicativo.</div>
+      </details>
+      <details>
+        <summary>O QR Code PIX funciona em qualquer banco?</summary>
+        <div class="faq-body">Sim. O sistema gera QR Codes PIX seguindo rigorosamente o padrão <strong>EMV/BACEN</strong> (especificação oficial do Banco Central do Brasil), funcionando em todos os bancos e fintechs que suportam PIX.</div>
+      </details>
+      <details>
+        <summary>Meus dados ficam seguros?</summary>
+        <div class="faq-body">Absolutamente. Os dados ficam armazenados no <strong>Firebase (Google Cloud)</strong>, com regras de segurança que garantem que apenas você acessa as suas informações. Nenhum outro usuário — nem o suporte — pode visualizar seus dados.</div>
+      </details>
+      <details>
+        <summary>Posso cancelar a qualquer momento?</summary>
+        <div class="faq-body">Sim. Não há fidelidade. Ao não renovar o plano, o acesso simplesmente encerra ao fim do período contratado. Para cancelar, basta não realizar o próximo pagamento.</div>
+      </details>
+      <details>
+        <summary>Quantos clientes e serviços posso cadastrar?</summary>
+        <div class="faq-body">Todos os planos permitem clientes, serviços e agendamentos <strong>ilimitados</strong>. Não há limite de uso.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>Comece agora.<br>É <em>grátis</em> por 15 dias.</h2>
+    <p>Sem cartão de crédito. Sem compromisso. Configure em menos de 5 minutos.</p>
+    <div class="final-cta-btns">
+      <a href="login.html" class="btn btn-light btn-xl">Criar conta grátis</a>
+      <a id="btn-wa-final" href="#" onclick="contatoWhatsApp();return false" class="btn btn-wa btn-xl">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        Falar pelo WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-brand">Belle<em>·</em>Agenda</span>
+      <div class="footer-links">
+        <a href="login.html">Entrar</a>
+        <a href="manual.html" target="_blank">Manual</a>
+        <a href="#faq">FAQ</a>
+        <a href="#precos">Planos</a>
+      </div>
+    </div>
+    <p class="footer-copy">© 2026 Belle·Agenda · Sistema para salões de beleza e profissionais de saúde · sm.servicosetecnologia@gmail.com</p>
+  </div>
+</footer>
+
+<script>
+// ⚠️ ATUALIZE com o seu número de WhatsApp (DDI 55 + DDD + número, sem espaços ou traços)
+const WHATSAPP = '5500000000000';
+
+function contratar(plano, valor) {
+  const msg = encodeURIComponent(
+    `Olá! Tenho interesse no *Plano ${plano}* (${valor}) do Belle·Agenda.\n\nPoderia me informar os dados para pagamento via PIX?`
+  );
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
+}
+
+function contatoWhatsApp() {
+  const msg = encodeURIComponent(
+    `Olá! Gostaria de saber mais sobre o Belle·Agenda e conhecer os planos disponíveis.`
+  );
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
+}
+
+// Ativa link âncora do plano semestral direto via URL (?plano=semestral)
+const params = new URLSearchParams(location.search);
+if (params.get('plano') === 'semestral') {
+  document.getElementById('btn-semestral').click();
+}
+</script>
+</body>
+</html>
