@@ -20,7 +20,7 @@
   --radius:16px;--radius-lg:24px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;overflow-x:hidden}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%;height:auto}
@@ -197,65 +197,75 @@ footer{background:var(--ink);color:rgba(255,255,255,.6);padding:40px 0}
 
 /* ====== RESPONSIVE ====== */
 @media(max-width:900px){
-  section{padding:60px 0}
-  .hero{padding:60px 0 50px}
-  .hero-inner{grid-template-columns:1fr;gap:40px}
-  .hero h1{font-size:38px}
-  .hero-visual{order:-1}
-  .mockup-float.f1{top:-10px;right:-6px}
-  .mockup-float.f2{bottom:-10px;left:-6px}
+  section{padding:56px 0}
+  .hero{padding:60px 0 44px}
+  .hero-inner{grid-template-columns:1fr;gap:32px}
+  .hero h1{font-size:36px;letter-spacing:-1px}
+  .hero-sub{max-width:100%}
+  .hero-visual{display:none}
   .features-grid{grid-template-columns:1fr 1fr}
-  .steps-grid{grid-template-columns:1fr;gap:32px}
+  .steps-grid{grid-template-columns:1fr;gap:24px}
   .steps-grid::before{display:none}
-  .pricing-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}
-  .payment-steps{grid-template-columns:1fr 1fr;gap:24px}
-  .section-title{font-size:32px}
-  .final-cta{padding:72px 0}
-  .final-cta h2{font-size:34px}
+  .pricing-grid{grid-template-columns:1fr;max-width:440px;margin:0 auto}
+  .payment-steps{grid-template-columns:1fr 1fr;gap:20px}
+  .section-title{font-size:30px}
+  .section-head{margin-bottom:40px}
+  .final-cta{padding:64px 0}
+  .final-cta h2{font-size:32px}
   .header-nav{display:none}
 }
 @media(max-width:600px){
-  body{overflow-x:hidden}
+  html,body{overflow-x:hidden}
+  .header-inner{padding:12px 14px}
+  .header-brand{font-size:18px}
+  .header-login{display:none}
   .container{padding:0 14px;word-break:break-word;overflow-wrap:break-word}
-  section{padding:40px 0}
-  .hero{padding:40px 0 28px}
-  .hero h1{font-size:26px;letter-spacing:-.3px}
-  .hero-sub{font-size:14px;margin-bottom:20px}
-  .hero-cta{flex-direction:column;gap:10px}
+  section{padding:36px 0}
+  .hero{padding:36px 0 24px}
+  .hero h1{font-size:22px;letter-spacing:-.3px;line-height:1.2}
+  .hero-sub{font-size:14px;margin-bottom:18px}
+  .hero-badge{font-size:11px;padding:5px 12px}
+  .hero-cta{flex-direction:column;gap:8px}
   .hero-cta .btn{width:100%;justify-content:center}
-  .hero-visual{display:none}
-  .hero-trust{gap:12px}
-  .trust-bar{padding:14px 0}
-  .trust-bar-inner{gap:16px}
+  .hero-trust{gap:8px}
+  .trust-bar{padding:12px 0}
+  .trust-bar-inner{flex-direction:column;gap:8px;padding:0 14px;align-items:flex-start}
   .trust-item{font-size:12px}
   .section-title{font-size:22px;letter-spacing:-.3px}
   .section-sub{font-size:13px}
-  .section-head{margin-bottom:24px}
+  .section-head{margin-bottom:20px}
   .features-grid{grid-template-columns:1fr}
-  .feat-card{padding:20px}
-  .steps-grid{gap:20px}
-  .step-num{width:56px;height:56px;font-size:22px}
+  .feat-card{padding:18px}
+  .feat-icon{margin-bottom:12px}
+  .steps-grid{gap:16px}
+  .step-num{width:48px;height:48px;font-size:20px;margin-bottom:12px}
+  .step-item h3{font-size:14px}
+  .step-item p{font-size:13px}
   .pricing-grid{max-width:100%}
-  .plan-card{padding:24px 16px}
-  .plan-price .amount{font-size:36px}
-  .payment-steps{grid-template-columns:1fr 1fr;gap:14px}
-  .payment-note{padding:12px 14px;font-size:12px}
-  .faq-list{gap:8px}
-  summary{padding:14px 16px;font-size:14px}
-  .faq-body{padding:12px 16px;font-size:13px}
-  .final-cta{padding:44px 0}
+  .plan-card{padding:24px 14px}
+  .plan-card.featured{box-shadow:0 0 0 2px var(--accent-soft)}
+  .plan-price .amount{font-size:34px}
+  .plan-badge{font-size:10px;padding:4px 12px}
+  .payment-steps{grid-template-columns:1fr 1fr;gap:12px}
+  .pay-step-num{width:40px;height:40px;font-size:18px}
+  .pay-step h4{font-size:13px}
+  .pay-step p{font-size:11px}
+  .payment-note{padding:12px 14px;font-size:12px;gap:10px}
+  .faq-list{gap:6px}
+  summary{padding:13px 14px;font-size:13px}
+  .faq-body{padding:10px 14px;font-size:12px}
+  .final-cta{padding:40px 0}
   .final-cta h2{font-size:22px;letter-spacing:-.3px;margin-bottom:10px}
-  .final-cta p{font-size:13px;margin-bottom:20px}
-  .final-cta-btns{flex-direction:column;align-items:center;gap:10px}
-  .final-cta-btns .btn{width:100%}
-  .btn-xl{padding:14px 20px;font-size:14px}
-  .btn-lg{padding:13px 20px;font-size:13px}
-  footer{padding:24px 0}
-  .footer-inner{flex-direction:column;text-align:center}
-  .footer-links{justify-content:center}
-  .footer-copy{font-size:11px}
-  .header-inner{padding:12px 14px}
-  .header-actions .btn-ghost{display:none}
+  .final-cta p{font-size:13px;margin-bottom:18px}
+  .final-cta-btns{flex-direction:column;gap:8px;align-items:stretch}
+  .final-cta-btns .btn{width:100%;white-space:normal;text-align:center}
+  .btn-xl{padding:13px 20px;font-size:14px}
+  .btn-lg{padding:12px 18px;font-size:13px}
+  footer{padding:20px 0}
+  .footer-inner{flex-direction:column;text-align:center;gap:10px}
+  .footer-links{justify-content:center;gap:12px}
+  .footer-brand{font-size:17px}
+  .footer-copy{font-size:11px;padding-top:16px}
 }
 </style>
 </head>
