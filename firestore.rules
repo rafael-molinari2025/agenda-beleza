@@ -8,11 +8,20 @@ service cloud.firestore {
         && request.auth.token.email == 'sm.servicosetecnologia@gmail.com';
     }
 
-    // ── Verifica se a assinatura do usuário está ativa ──
+    // ── Verifica se a assinatura do usuário está ativa e dentro do prazo ──
     function isActive(uid) {
+      let path = /databases/$(database)/documents/subscriptions/$(uid);
       // Sem documento = usuário anterior ao sistema de assinaturas → libera acesso
-      return !exists(/databases/$(database)/documents/subscriptions/$(uid))
-        || get(/databases/$(database)/documents/subscriptions/$(uid)).data.status in ['active', 'trial'];
+      if (!exists(path)) { return true; }
+      let sub = get(path).data;
+      let now = request.time.toMillis();
+      if (sub.status == 'active') {
+        return !('expiresAt' in sub) || sub.expiresAt > now;
+      }
+      if (sub.status == 'trial') {
+        return ('trialEndsAt' in sub) && sub.trialEndsAt > now;
+      }
+      return false;
     }
 
     // ── Coleção de assinaturas ──
@@ -21,11 +30,13 @@ service cloud.firestore {
       allow read: if request.auth != null
         && (request.auth.uid == userId || isAdmin());
 
-      // Usuário cria apenas a própria com status 'trial'; admin cria qualquer uma
+      // Usuário cria apenas a própria com status 'trial' e trialEndsAt no máximo 16 dias
       allow create: if isAdmin()
         || (request.auth != null
           && request.auth.uid == userId
           && request.resource.data.status == 'trial'
+          && request.resource.data.trialEndsAt is int
+          && request.resource.data.trialEndsAt <= (request.time.toMillis() + 16 * 24 * 60 * 60 * 1000)
           && request.resource.data.email is string
           && request.resource.data.name is string);
 
