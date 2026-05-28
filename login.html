@@ -77,8 +77,10 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--a
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script>
 firebase.initializeApp(firebaseConfig);
+firebase.analytics();
 const auth = firebase.auth();
 const db = firebase.firestore();
 

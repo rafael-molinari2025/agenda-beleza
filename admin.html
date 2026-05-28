@@ -101,6 +101,34 @@ tr:hover td{background:#FAFAFA}
 .user-card-meta-item .meta-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-soft);font-weight:600;margin-bottom:2px}
 .user-card-meta-item .meta-val{font-size:12px;font-weight:500}
 .user-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+/* ====== ADMIN TABS ====== */
+.admin-tabs{display:flex;gap:6px;margin-bottom:28px;background:var(--bg);border-radius:12px;padding:5px;width:fit-content}
+.admin-tab{border:none;background:none;padding:9px 22px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);transition:.2s}
+.admin-tab.active{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+/* ====== ANALYTICS PANEL ====== */
+.an-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.an-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+@media(max-width:900px){.an-grid{grid-template-columns:1fr 1fr}.an-grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.an-grid{grid-template-columns:1fr}.an-grid-3{grid-template-columns:1fr}}
+.an-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+.an-card .an-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:8px;font-weight:600}
+.an-card .an-val{font-size:30px;font-weight:700;line-height:1}
+.an-card .an-sub{font-size:12px;color:var(--ink-soft);margin-top:4px}
+.an-card.accent .an-val{color:var(--accent)}
+.an-card.green .an-val{color:var(--green)}
+.an-card.gold .an-val{color:var(--gold)}
+.an-section-title{font-family:'DM Serif Display';font-size:18px;margin-bottom:14px;color:var(--ink)}
+/* Gráfico de barras CSS */
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:160px;padding:0 4px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.bar{width:100%;border-radius:6px 6px 0 0;background:var(--accent);min-height:4px;transition:height .4s ease}
+.bar.secondary{background:var(--accent-soft)}
+.bar-lbl{font-size:10px;color:var(--ink-soft);text-align:center;font-weight:600}
+.bar-val{font-size:10px;color:var(--ink-soft);text-align:center}
+.ga-link-box{background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ga-link-box p{color:white;font-size:14px;line-height:1.5}
+.ga-link-box a{background:white;color:#1a73e8;padding:9px 18px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
+.ga-link-box a:hover{background:#e8f0fe}
 </style>
 </head>
 <body>
@@ -125,22 +153,70 @@ tr:hover td{background:#FAFAFA}
 </header>
 
 <main>
-  <h2>Gestão de <em>Assinaturas</em></h2>
+  <h2>Painel <em>Administrativo</em></h2>
   <p class="subtitle" id="lastRefresh">Carregando dados...</p>
 
-  <div class="stats-row" id="statsRow">
-    <div class="stat"><div class="label">Total</div><div class="val" id="stTotal">—</div></div>
-    <div class="stat active"><div class="label">Ativos</div><div class="val" id="stActive">—</div></div>
-    <div class="stat trial"><div class="label">Em Teste</div><div class="val" id="stTrial">—</div></div>
-    <div class="stat suspended"><div class="label">Suspensos</div><div class="val" id="stSuspended">—</div></div>
+  <!-- Abas -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" id="tabSubs" onclick="showAdminTab('subs')">Assinaturas</button>
+    <button class="admin-tab" id="tabAnalytics" onclick="showAdminTab('analytics')">Analytics</button>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h3>Usuários</h3>
-      <input class="search" id="searchInput" placeholder="Buscar por nome ou e-mail..." oninput="renderTable()">
+  <!-- ====== ABA ASSINATURAS ====== -->
+  <div id="panelSubs">
+    <div class="stats-row" id="statsRow">
+      <div class="stat"><div class="label">Total</div><div class="val" id="stTotal">—</div></div>
+      <div class="stat active"><div class="label">Ativos</div><div class="val" id="stActive">—</div></div>
+      <div class="stat trial"><div class="label">Em Teste</div><div class="val" id="stTrial">—</div></div>
+      <div class="stat suspended"><div class="label">Suspensos</div><div class="val" id="stSuspended">—</div></div>
     </div>
-    <div id="tableWrap"></div>
+    <div class="card">
+      <div class="card-header">
+        <h3>Usuários</h3>
+        <input class="search" id="searchInput" placeholder="Buscar por nome ou e-mail..." oninput="renderTable()">
+      </div>
+      <div id="tableWrap"></div>
+    </div>
+  </div>
+
+  <!-- ====== ABA ANALYTICS ====== -->
+  <div id="panelAnalytics" style="display:none">
+
+    <!-- Atividade de usuários -->
+    <p class="an-section-title">Atividade de Usuários</p>
+    <div class="an-grid">
+      <div class="an-card accent"><div class="an-label">Novos este mês</div><div class="an-val" id="anNewMonth">—</div><div class="an-sub">cadastros</div></div>
+      <div class="an-card green"><div class="an-label">Ativos hoje</div><div class="an-val" id="anActiveToday">—</div><div class="an-sub">último login hoje</div></div>
+      <div class="an-card"><div class="an-label">Ativos 7 dias</div><div class="an-val" id="anActive7">—</div><div class="an-sub">último login na semana</div></div>
+      <div class="an-card gold"><div class="an-label">Indicações</div><div class="an-val" id="anReferrals">—</div><div class="an-sub">usuários indicados</div></div>
+    </div>
+
+    <!-- Crescimento mensal -->
+    <p class="an-section-title">Crescimento — Novos Usuários por Mês</p>
+    <div class="card" style="padding:24px 20px 16px;margin-bottom:28px">
+      <div class="bar-chart" id="growthChart"></div>
+    </div>
+
+    <!-- Uso do app -->
+    <p class="an-section-title">Uso do Aplicativo <span style="font-size:13px;font-weight:400;color:var(--ink-soft)">(acumulado desde a ativação)</span></p>
+    <div class="an-grid-3">
+      <div class="an-card accent"><div class="an-label">Agendamentos criados</div><div class="an-val" id="anAppts">—</div></div>
+      <div class="an-card"><div class="an-label">PIX gerados</div><div class="an-val" id="anPix">—</div></div>
+      <div class="an-card green"><div class="an-label">WhatsApp enviados</div><div class="an-val" id="anWa">—</div></div>
+    </div>
+    <div class="an-grid-3" style="margin-bottom:28px">
+      <div class="an-card"><div class="an-label">Clientes cadastrados</div><div class="an-val" id="anClients">—</div></div>
+      <div class="an-card gold"><div class="an-label">Bônus de indicação pagos</div><div class="an-val" id="anBonus">—</div></div>
+      <div class="an-card"><div class="an-label">Dias de uso (DAU × dia)</div><div class="an-val" id="anDau">—</div></div>
+    </div>
+
+    <!-- Link Google Analytics -->
+    <div class="ga-link-box">
+      <p><strong style="font-size:15px">Google Analytics</strong><br>
+      Tráfego da landing page, origem dos visitantes, taxa de conversão e comportamento em tempo real estão no painel do Google Analytics / Firebase Console.</p>
+      <a href="https://analytics.google.com" target="_blank" rel="noopener">Abrir Google Analytics →</a>
+    </div>
+
   </div>
 </main>
 
@@ -423,6 +499,85 @@ async function saveEdit() {
   toast('Assinatura atualizada');
   closeEdit();
   await loadSubs();
+}
+
+function showAdminTab(tab) {
+  document.getElementById('panelSubs').style.display = tab === 'subs' ? 'block' : 'none';
+  document.getElementById('panelAnalytics').style.display = tab === 'analytics' ? 'block' : 'none';
+  document.getElementById('tabSubs').classList.toggle('active', tab === 'subs');
+  document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
+  if (tab === 'analytics') loadAnalytics();
+}
+
+async function loadAnalytics() {
+  const now = Date.now();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const day7 = now - 7 * 86400000;
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+
+  // Métricas de usuários (a partir de allSubs já carregado)
+  const newMonth = allSubs.filter(s => s.createdAt && s.createdAt >= monthStart).length;
+  const activeToday = allSubs.filter(s => s.lastLoginAt && new Date(s.lastLoginAt).toISOString().split('T')[0] === todayStr).length;
+  const active7 = allSubs.filter(s => s.lastLoginAt && s.lastLoginAt >= day7).length;
+  const referrals = allSubs.filter(s => s.referredBy).length;
+  const bonusPaid = allSubs.filter(s => s.bonusGiven).length;
+
+  document.getElementById('anNewMonth').textContent = newMonth;
+  document.getElementById('anActiveToday').textContent = activeToday;
+  document.getElementById('anActive7').textContent = active7;
+  document.getElementById('anReferrals').textContent = referrals;
+  document.getElementById('anBonus').textContent = bonusPaid;
+
+  // Gráfico de crescimento mensal (últimos 7 meses)
+  renderGrowthChart();
+
+  // Métricas de uso (collection group analytics)
+  try {
+    const snap = await db.collectionGroup('analytics').get();
+    let appts = 0, pix = 0, wa = 0, clients = 0, dau = 0;
+    snap.docs.forEach(d => {
+      const data = d.data();
+      appts   += data.appt_created   || 0;
+      pix     += data.pix_opened     || 0;
+      wa      += data.wa_sent        || 0;
+      clients += data.client_added   || 0;
+      if (data.lastActive) dau++;
+    });
+    document.getElementById('anAppts').textContent   = appts.toLocaleString('pt-BR');
+    document.getElementById('anPix').textContent     = pix.toLocaleString('pt-BR');
+    document.getElementById('anWa').textContent      = wa.toLocaleString('pt-BR');
+    document.getElementById('anClients').textContent = clients.toLocaleString('pt-BR');
+    document.getElementById('anDau').textContent     = dau.toLocaleString('pt-BR');
+  } catch(e) {
+    ['anAppts','anPix','anWa','anClients','anDau'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+  }
+}
+
+function renderGrowthChart() {
+  const months = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    months.push({
+      label: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.',''),
+      start: d.getTime(),
+      end: i === 0 ? Date.now() : new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime()
+    });
+  }
+  const counts = months.map(m =>
+    allSubs.filter(s => s.createdAt && s.createdAt >= m.start && s.createdAt < m.end).length
+  );
+  const max = Math.max(...counts, 1);
+  const chart = document.getElementById('growthChart');
+  chart.innerHTML = counts.map((c, i) => `
+    <div class="bar-wrap">
+      <div class="bar-val">${c > 0 ? c : ''}</div>
+      <div class="bar${i === 6 ? '' : ' secondary'}" style="height:${Math.round((c/max)*140)+4}px"></div>
+      <div class="bar-lbl">${months[i].label}</div>
+    </div>`).join('');
 }
 
 async function giveBonus(referredUid, referrerUid) {

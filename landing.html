@@ -679,7 +679,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.6);padding:40px 0}
   </div>
 </footer>
 
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script>
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+
 // ⚠️ ATUALIZE com o seu número de WhatsApp (DDI 55 + DDD + número, sem espaços ou traços)
 const WHATSAPP = '5531990656645';
 

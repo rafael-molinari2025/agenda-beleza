@@ -567,12 +567,14 @@ tr:hover td{background:var(--bg)}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
 // ============ FIREBASE ============
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+firebase.analytics();
 let uid = null;
 let pixApptId = null;
 
@@ -685,6 +687,15 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+
+function logEvent(type) {
+  if (!uid) return;
+  const day = new Date().toISOString().split('T')[0];
+  userCol('analytics').doc(day).set(
+    { [type]: firebase.firestore.FieldValue.increment(1), lastActive: Date.now() },
+    { merge: true }
+  ).catch(() => {});
+}
 function esc(s) { return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function brl(n) { return 'R$ '+(+n||0).toFixed(2).replace('.',','); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -783,6 +794,7 @@ function openPixModal(apptId) {
 
   // Abre o modal imediatamente — sem depender de QR
   document.getElementById('pixModal').classList.add('show');
+  logEvent('pix_opened');
 
   if (!settings.pixKey) {
     content.innerHTML = `<div class="pix-no-key">⚠️ <strong>Chave PIX não configurada.</strong><br>Acesse <strong>Configurações</strong>, preencha sua chave PIX e salve. Depois clique no botão PIX do agendamento novamente.</div>
@@ -852,6 +864,7 @@ function sendWhatsApp(apptId){
   const dateBr=a.date.split('-').reverse().join('/');
   const msg=`Olá ${c.name.split(' ')[0]}! 💕\n\nConfirmando seu agendamento:\n\n✂️ *${s.name}*\n📅 ${dateBr} às ${a.time}\n💰 ${brl(s.price)}\n\nAguardo você! 😊`;
   window.open(`https://wa.me/55${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  logEvent('wa_sent');
 }
 function wishBday(id){
   const c=state.clients.find(x=>x.id===id);
@@ -902,7 +915,7 @@ async function saveAppt(){
   closeModal('apptModal');
   renderAll();
   toast(isNew?'Agendamento criado ✓':'Agendamento atualizado ✓');
-  if(isNew){
+  if(isNew){ logEvent('appt_created');
     // Abre WhatsApp se cliente tem telefone
     const c=state.clients.find(x=>x.id===clientId);
     if(c&&c.phone) setTimeout(()=>sendWhatsApp(savedId),500);
@@ -939,7 +952,7 @@ async function saveClient(){
   if(!name){toast('Informe o nome');return;}
   const data={name,phone:document.getElementById('cliPhone').value.replace(/\D/g,''),bday:document.getElementById('cliBday').value,email:document.getElementById('cliEmail').value,notes:document.getElementById('cliNotes').value};
   if(editingId.client){await userCol('clients').doc(editingId.client).update(data);Object.assign(state.clients.find(x=>x.id===editingId.client),data);}
-  else{const ref=await userCol('clients').add({...data,createdAt:Date.now()});state.clients.push({id:ref.id,...data});}
+  else{const ref=await userCol('clients').add({...data,createdAt:Date.now()});state.clients.push({id:ref.id,...data});logEvent('client_added');}
   closeModal('clientModal');renderAll();toast('Cliente salvo ✓');
 }
 async function delClient(id){
