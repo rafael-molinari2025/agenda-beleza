@@ -864,10 +864,10 @@ async function saveAppt(){
   }
 }
 async function delAppt(id){
-  if(!confirm('Cancelar este agendamento?'))return;
+  if(!confirm('Excluir este agendamento?'))return;
   await userCol('appts').doc(id).delete();
   state.appts=state.appts.filter(a=>a.id!==id);
-  renderAll();toast('Agendamento cancelado');
+  renderAll();toast('Agendamento excluído');
 }
 async function toggleDone(id){
   const a=state.appts.find(x=>x.id===id);
@@ -923,7 +923,7 @@ async function delService(id){
   if(linked>0&&!confirm(`Este serviço tem ${linked} agendamento(s) vinculado(s). Excluir mesmo assim?`))return;
   else if(!linked&&!confirm('Excluir este serviço?'))return;
   await userCol('services').doc(id).delete();
-  state.services=state.services.filter(s=>s.id!==id);renderAll();
+  state.services=state.services.filter(s=>s.id!==id);renderAll();toast('Serviço excluído');
 }
 
 // ============ RENDER ============
@@ -954,8 +954,9 @@ function renderApptCard(a){
 function renderDash(){
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('dashToday').textContent=state.appts.filter(a=>a.date===today).length;
-  const now=new Date(),ws=new Date(now),we=new Date(now);
-  ws.setDate(now.getDate()-now.getDay());we.setDate(ws.getDate()+6);
+  const now=new Date();
+  const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-now.getDay());
+  const we=new Date(now.getFullYear(),now.getMonth(),now.getDate()-now.getDay()+6,23,59,59);
   document.getElementById('dashWeek').textContent=state.appts.filter(a=>{const d=new Date(a.date+'T12:00');return d>=ws&&d<=we;}).length;
   const month=now.toISOString().slice(0,7);
   document.getElementById('dashRev').textContent=brl(state.appts.filter(a=>a.date.startsWith(month)).reduce((s,a)=>{const svc=state.services.find(x=>x.id===a.serviceId);return s+(svc?svc.price:0);},0));

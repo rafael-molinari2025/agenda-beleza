@@ -616,13 +616,14 @@
     if(!confirm('Excluir este serviço?')) return;
     state.services = state.services.filter(s=>s.id!==id);
     save(); renderAll();
+    toast('Serviço excluído');
   }
 
   function delAppt(id){
-    if(!confirm('Cancelar este agendamento?')) return;
+    if(!confirm('Excluir este agendamento?')) return;
     state.appts = state.appts.filter(a=>a.id!==id);
     save(); renderAll();
-    toast('Agendamento cancelado');
+    toast('Agendamento excluído');
   }
 
   function closeModal(id){ document.getElementById(id).classList.remove('show'); }
@@ -756,7 +757,7 @@
     renderDayAppts();
   }
   function selectDay(d){ selectedDay = d; renderCalendar(); }
-  function changeMonth(n){ calDate.setMonth(calDate.getMonth()+n); renderCalendar(); }
+  function changeMonth(n){ calDate = new Date(calDate.getFullYear(), calDate.getMonth()+n, 1); renderCalendar(); }
   function goToday(){ calDate = new Date(); selectedDay = new Date().toISOString().split('T')[0]; renderCalendar(); }
 
   function renderDayAppts(){

@@ -150,7 +150,7 @@ tr:hover td{background:#FAFAFA}
     <h3>Editar Assinatura</h3>
     <div class="field"><label>Status</label>
       <select id="editStatus">
-        <option value="trial">Trial</option>
+        <option value="trial">Em Teste (Trial)</option>
         <option value="active">Ativo</option>
         <option value="suspended">Suspenso</option>
       </select>
@@ -333,7 +333,7 @@ function labelStatus(s) {
   if (s.status === 'legacy') return 'Sem assinatura';
   if (s.status === 'trial') {
     const days = Math.ceil(((s.trialEndsAt||0) - Date.now()) / 86400000);
-    return days > 0 ? `Trial (${days}d)` : 'Trial expirado';
+    return days > 0 ? `Em teste (${days}d restantes)` : 'Teste expirado';
   }
   return s.status;
 }
