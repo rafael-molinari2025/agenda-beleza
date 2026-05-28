@@ -276,8 +276,15 @@ function renderTable() {
     const created = s.createdAt ? new Date(s.createdAt).toLocaleDateString('pt-BR') : '—';
     const expiry = expiryDate(s);
     const badge = `<span class="badge ${badgeClass(s.status)}">${labelStatus(s)}</span>`;
+    const referrer = s.referredBy ? allSubs.find(r => r.uid === s.referredBy) : null;
+    const referralTag = referrer
+      ? `<div style="font-size:11px;color:var(--yellow);margin-top:4px">Indicado por: ${esc(referrer.name||referrer.email||s.referredBy)}</div>`
+      : '';
+    const bonusBtn = s.referredBy && !s.bonusGiven
+      ? `<button class="btn btn-gold" onclick="giveBonus('${s.uid}','${s.referredBy}')">Premiar indicante</button>`
+      : '';
     return `<tr>
-      <td><strong>${esc(s.name||'')}</strong><br><span style="color:var(--ink-soft);font-size:12px">${esc(s.email||s.uid)}</span></td>
+      <td><strong>${esc(s.name||'')}</strong><br><span style="color:var(--ink-soft);font-size:12px">${esc(s.email||s.uid)}</span>${referralTag}</td>
       <td>${badge}</td>
       <td>${created}</td>
       <td>${expiry}</td>
@@ -286,6 +293,7 @@ function renderTable() {
         <button class="btn btn-gold" onclick="renew('${s.uid}',30)">+30d</button>
         <button class="btn btn-red" onclick="suspend('${s.uid}')">Suspender</button>
         <button class="btn btn-ghost" onclick="openEdit('${s.uid}')">Editar</button>
+        ${bonusBtn}
       </div></td>
     </tr>`;
   }).join('');
@@ -303,11 +311,19 @@ function renderTable() {
     const created = s.createdAt ? new Date(s.createdAt).toLocaleDateString('pt-BR') : '—';
     const expiry = expiryDate(s);
     const badge = `<span class="badge ${badgeClass(s.status)}">${labelStatus(s)}</span>`;
+    const referrer = s.referredBy ? allSubs.find(r => r.uid === s.referredBy) : null;
+    const referralTag = referrer
+      ? `<div style="font-size:11px;color:var(--yellow);margin-top:3px">Indicado por: ${esc(referrer.name||referrer.email||s.referredBy)}</div>`
+      : '';
+    const bonusBtn = s.referredBy && !s.bonusGiven
+      ? `<button class="btn btn-gold" onclick="giveBonus('${s.uid}','${s.referredBy}')">Premiar indicante</button>`
+      : '';
     return `<div class="user-card">
       <div class="user-card-top">
         <div class="user-card-info">
           <strong>${esc(s.name||'')}</strong>
           <span>${esc(s.email||s.uid)}</span>
+          ${referralTag}
         </div>
         ${badge}
       </div>
@@ -320,6 +336,7 @@ function renderTable() {
         <button class="btn btn-gold" onclick="renew('${s.uid}',30)">+30d</button>
         <button class="btn btn-red" onclick="suspend('${s.uid}')">Suspender</button>
         <button class="btn btn-ghost" onclick="openEdit('${s.uid}')">Editar</button>
+        ${bonusBtn}
       </div>
     </div>`;
   }).join('')}</div>`;
@@ -405,6 +422,25 @@ async function saveEdit() {
   await db.collection('subscriptions').doc(editingUid).set(update, { merge: true });
   toast('Assinatura atualizada');
   closeEdit();
+  await loadSubs();
+}
+
+async function giveBonus(referredUid, referrerUid) {
+  const referrer = allSubs.find(s => s.uid === referrerUid);
+  if (!referrer) { toast('Indicante não encontrado'); return; }
+  const label = referrer.name || referrer.email || referrerUid;
+  if (!confirm(`Dar +30 dias para ${label}?`)) return;
+  const base = Math.max(referrer.expiresAt || Date.now(), Date.now());
+  const expiresAt = base + 30 * 86400000;
+  await db.collection('subscriptions').doc(referrerUid).set(
+    { status: 'active', expiresAt, updatedAt: Date.now() },
+    { merge: true }
+  );
+  await db.collection('subscriptions').doc(referredUid).set(
+    { bonusGiven: true, updatedAt: Date.now() },
+    { merge: true }
+  );
+  toast(`+30 dias concedidos a ${label}`);
   await loadSubs();
 }
 

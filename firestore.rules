@@ -34,7 +34,8 @@ service cloud.firestore {
           && request.resource.data.trialEndsAt is int
           && request.resource.data.trialEndsAt <= (request.time.toMillis() + 16 * 24 * 60 * 60 * 1000)
           && request.resource.data.email is string
-          && request.resource.data.name is string);
+          && request.resource.data.name is string
+          && (!('referredBy' in request.resource.data) || request.resource.data.referredBy is string));
 
       // Usuário pode atualizar apenas o campo lastLoginAt da própria assinatura
       allow update: if request.auth != null

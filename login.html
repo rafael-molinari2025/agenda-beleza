@@ -82,6 +82,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Captura código de indicação da URL e persiste na sessão
+const _refParam = new URLSearchParams(window.location.search).get('ref');
+if (_refParam) sessionStorage.setItem('refCode', _refParam);
+
 auth.onAuthStateChanged(user => {
   if (user) window.location.href = 'app.html';
 });
@@ -138,13 +142,17 @@ async function doRegister() {
       {name:'Corte Feminino', price:60, duration:45, commission:40, createdAt: Date.now()}
     );
     const now = Date.now();
-    await db.collection('subscriptions').doc(cred.user.uid).set({
+    const refCode = sessionStorage.getItem('refCode') || '';
+    const subData = {
       email, name,
       status: 'trial',
       createdAt: now,
       trialEndsAt: now + 15 * 24 * 60 * 60 * 1000,
       notes: ''
-    });
+    };
+    if (refCode && refCode !== cred.user.uid) subData.referredBy = refCode;
+    await db.collection('subscriptions').doc(cred.user.uid).set(subData);
+    sessionStorage.removeItem('refCode');
   } catch(e) { showError(friendly(e)); }
 }
 

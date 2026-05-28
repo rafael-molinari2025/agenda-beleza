@@ -208,6 +208,17 @@ tr:hover td{background:var(--bg)}
 .settings-section{margin-bottom:28px}
 .settings-section h4{font-family:'DM Serif Display';font-size:19px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 
+/* ====== REFERRAL ====== */
+.referral-box{background:linear-gradient(135deg,var(--accent-soft),#fdf0f4);border:1px solid #f0c4d0;border-radius:14px;padding:20px 22px;margin-top:4px}
+.referral-box h5{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.referral-box p{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-bottom:14px}
+.referral-link-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.referral-link-row input{flex:1;min-width:0;background:white;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:11px;color:var(--ink-soft);font-family:monospace;cursor:text}
+.ref-banner{background:linear-gradient(135deg,var(--accent-soft),#fdf0f4);border:1px solid #f0c4d0;border-radius:12px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px;cursor:pointer;transition:.2s}
+.ref-banner:hover{box-shadow:var(--shadow)}
+.ref-banner span{font-size:13px;font-weight:600;color:var(--accent)}
+.ref-banner-btn{background:var(--accent);color:white;padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+
 /* ====== LOADING ====== */
 #loadingOverlay{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:200;transition:opacity .4s}
 #loadingOverlay.hidden{opacity:0;pointer-events:none}
@@ -325,6 +336,10 @@ tr:hover td{background:var(--bg)}
         <div class="stat-card sage"><div class="label">Faturamento previsto</div><div class="value" id="dashRev">R$ 0</div><div class="sub">no mês</div></div>
         <div class="stat-card"><div class="label">Clientes ativos</div><div class="value" id="dashClients">0</div><div class="sub">cadastrados</div></div>
       </div>
+      <div class="ref-banner" onclick="goTo('settings')">
+        <span>Indique colegas e ganhe +30 dias grátis por cada indicação</span>
+        <div class="ref-banner-btn">Compartilhar link</div>
+      </div>
       <div class="grid-split">
         <div class="card">
           <div class="card-title">Próximos atendimentos <button class="btn btn-ghost btn-sm" onclick="goTo('cal')">Ver →</button></div>
@@ -433,6 +448,18 @@ tr:hover td{background:var(--bg)}
           <div class="field-row">
             <div class="field"><label>Nome do recebedor (máx. 25 caracteres)</label><input id="cfgPixName" maxlength="25" placeholder="Maria Silva"></div>
             <div class="field"><label>Cidade (máx. 15 caracteres)</label><input id="cfgPixCity" maxlength="15" placeholder="São Paulo"></div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>Indique e Ganhe</h4>
+          <div class="referral-box">
+            <h5>Ganhe +30 dias por cada colega que você indicar</h5>
+            <p>Compartilhe seu link exclusivo. Quando um profissional criar uma conta pelo seu link e ativar o plano, você recebe 30 dias adicionais de acesso gratuito.</p>
+            <div class="referral-link-row">
+              <input id="refLink" readonly>
+              <button class="btn btn-ghost btn-sm" onclick="copyRefLink()">Copiar</button>
+              <button class="btn btn-primary btn-sm" onclick="shareRefWpp()">WhatsApp</button>
+            </div>
           </div>
         </div>
       </div>
@@ -696,6 +723,26 @@ function loadSettingsUI() {
   document.getElementById('cfgPixKey').value = settings.pixKey || '';
   document.getElementById('cfgPixName').value = settings.pixName || '';
   document.getElementById('cfgPixCity').value = settings.pixCity || '';
+  buildRefLink();
+}
+
+function buildRefLink() {
+  const el = document.getElementById('refLink');
+  if (el && uid) el.value = `${location.origin}/login.html?ref=${uid}`;
+}
+
+function copyRefLink() {
+  const link = `${location.origin}/login.html?ref=${uid}`;
+  navigator.clipboard.writeText(link).then(() => toast('Link copiado!'));
+}
+
+function shareRefWpp() {
+  const name = settings.salonName || 'Belle·Agenda';
+  const link = `${location.origin}/login.html?ref=${uid}`;
+  const msg = encodeURIComponent(
+    `Oi! Uso o *Belle·Agenda* para organizar minha agenda de beleza e me ajuda muito.\nCrie sua conta grátis (15 dias de teste): ${link}`
+  );
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 function applySettings() {
   document.getElementById('salonLabel').textContent = (settings.salonName||'Belle·Agenda')+' · v2.0';
