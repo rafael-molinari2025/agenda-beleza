@@ -250,7 +250,7 @@ tr:hover td{background:var(--bg)}
     <div class="blocked-icon">🔒</div>
     <h2>Acesso Bloqueado</h2>
     <p id="suspendedMsg">Seu período de teste encerrou. Escolha um plano para continuar.</p>
-    <a href="landing.html#precos" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:12px">Ver planos e contratar</a>
+    <a href="/landing#precos" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:12px">Ver planos e contratar</a>
     <p class="contact">Dúvidas? <a href="mailto:sm.servicosetecnologia@gmail.com" style="color:inherit">sm.servicosetecnologia@gmail.com</a></p>
     <button class="btn btn-ghost btn-sm" style="margin-top:16px" onclick="doLogout()">Sair da conta</button>
   </div>
@@ -263,7 +263,7 @@ tr:hover td{background:var(--bg)}
     <div class="mobile-user" id="mobileUserLabel"></div>
   </div>
   <div class="mobile-header-actions">
-    <a href="manual.html" target="_blank" class="mobile-icon-link" title="Manual" id="mobileManualBtn">
+    <a href="/manual" target="_blank" class="mobile-icon-link" title="Manual" id="mobileManualBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     </a>
     <a href="admin.html" class="mobile-icon-link admin-link" title="Admin" id="mobileAdminBtn" style="display:none">
@@ -306,7 +306,7 @@ tr:hover td{background:var(--bg)}
       Configurações
     </button>
     <div class="nav-spacer"></div>
-    <a href="manual.html" target="_blank" class="nav-item" style="text-decoration:none">
+    <a href="/manual" target="_blank" class="nav-item" style="text-decoration:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       Manual
     </a>
@@ -492,7 +492,7 @@ tr:hover td{background:var(--bg)}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>Config</span>
   </button>
-  <a href="manual.html" target="_blank" class="bnav-item" style="text-decoration:none" title="Manual">
+  <a href="/manual" target="_blank" class="bnav-item" style="text-decoration:none" title="Manual">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     <span>Manual</span>
   </a>
@@ -632,7 +632,7 @@ async function checkSubscription(user) {
       }
       if (daysLeft <= 5) {
         const banner = document.getElementById('trialBanner');
-        banner.innerHTML = `⚠️ Seu período de teste expira em <strong>${daysLeft} dia(s)</strong>. <a href="landing.html#precos" style="color:inherit;text-decoration:underline;font-weight:700">Contrate um plano agora</a> para não perder o acesso.`;
+        banner.innerHTML = `⚠️ Seu período de teste expira em <strong>${daysLeft} dia(s)</strong>. <a href="/landing#precos" style="color:inherit;text-decoration:underline;font-weight:700">Contrate um plano agora</a> para não perder o acesso.`;
         banner.classList.add('show');
       }
     }
@@ -642,7 +642,7 @@ async function checkSubscription(user) {
 }
 
 auth.onAuthStateChanged(async user => {
-  if (!user) { window.location.href = 'login.html'; return; }
+  if (!user) { window.location.href = '/login'; return; }
   uid = user.uid;
   document.getElementById('userEmailLabel').textContent = user.email;
   document.getElementById('mobileUserLabel').textContent = user.email;
@@ -727,7 +727,7 @@ function updateDashBtn() {
 window.addEventListener('resize', updateDashBtn);
 updateDashBtn();
 
-async function doLogout() { await auth.signOut(); window.location.href = 'login.html'; }
+async function doLogout() { await auth.signOut(); window.location.href = '/login'; }
 
 // ============ SETTINGS ============
 function loadSettingsUI() {
@@ -741,17 +741,17 @@ function loadSettingsUI() {
 
 function buildRefLink() {
   const el = document.getElementById('refLink');
-  if (el && uid) el.value = `${location.origin}/login.html?ref=${uid}`;
+  if (el && uid) el.value = `${location.origin}/login?ref=${uid}`;
 }
 
 function copyRefLink() {
-  const link = `${location.origin}/login.html?ref=${uid}`;
+  const link = `${location.origin}/login?ref=${uid}`;
   navigator.clipboard.writeText(link).then(() => toast('Link copiado!'));
 }
 
 function shareRefWpp() {
   const name = settings.salonName || 'Belle·Agenda';
-  const link = `${location.origin}/login.html?ref=${uid}`;
+  const link = `${location.origin}/login?ref=${uid}`;
   const msg = encodeURIComponent(
     `Oi! Uso o *Belle·Agenda* para organizar minha agenda de beleza e me ajuda muito.\nCrie sua conta grátis (15 dias de teste): ${link}`
   );
