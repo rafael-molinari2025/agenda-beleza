@@ -73,5 +73,32 @@ service cloud.firestore {
     match /{path=**}/analytics/{day} {
       allow read: if isAdmin();
     }
+
+    // ── Contador de visitas da landing page (sem autenticação) ──
+    match /landingViews/{date} {
+      allow read: if isAdmin();
+      allow create: if date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count is int
+        && request.resource.data.count == 1;
+      allow update: if date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count is int
+        && request.resource.data.count == resource.data.count + 1;
+    }
+
+    // ── Controle de trial por dispositivo (fingerprint) ──
+    // Impede que a mesma pessoa crie múltiplas contas de teste
+    match /trialDevices/{fp} {
+      // Usuário autenticado pode ler (necessário para checar se o dispositivo já foi usado)
+      allow read: if request.auth != null;
+      // Criação permitida apenas pelo próprio usuário recém-autenticado
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.createdAt is int;
+      // Atualização e exclusão reservadas ao admin
+      allow update, delete: if isAdmin();
+    }
   }
 }

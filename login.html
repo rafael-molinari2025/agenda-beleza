@@ -124,9 +124,42 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   if (!email || !pass) { showError('Preencha e-mail e senha.'); return; }
+  const btn = document.querySelector('#formLogin .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Entrando...';}
   try {
     await auth.signInWithEmailAndPassword(email, pass);
-  } catch(e) { showError(friendly(e)); }
+  } catch(e) {
+    showError(friendly(e));
+    if(btn){btn.disabled=false;btn.textContent='Entrar';}
+  }
+}
+
+// Gera hash do dispositivo: canvas + hardware + navegador
+function generateDeviceFingerprint() {
+  const parts = [
+    navigator.userAgent,
+    navigator.language || '',
+    screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+    String(new Date().getTimezoneOffset()),
+    String(navigator.hardwareConcurrency || 0),
+    navigator.platform || ''
+  ];
+  try {
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+    c.width = 200; c.height = 30;
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#c9376c';
+    ctx.fillRect(0, 0, 200, 30);
+    ctx.fillStyle = '#2a1f2e';
+    ctx.fillText('Belle\xb7Agenda v2', 2, 4);
+    parts.push(c.toDataURL().slice(-50));
+  } catch(e) {}
+  const str = parts.join('\x1e');
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = (Math.imul(h, 33) ^ str.charCodeAt(i)) >>> 0;
+  return h.toString(36);
 }
 
 async function doRegister() {
@@ -135,8 +168,34 @@ async function doRegister() {
   const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPass').value;
   if (!name || !email || !pass) { showError('Preencha todos os campos.'); return; }
+
+  // Verificação rápida local (localStorage)
+  const fp = generateDeviceFingerprint();
+  if (localStorage.getItem('belle_trial_' + fp)) {
+    showError('Este dispositivo já utilizou o período de teste gratuito. Para continuar, contrate um plano em nosso site.');
+    return;
+  }
+
+  const btn = document.querySelector('#formReg .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Verificando...';}
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+    // Verificação no Firestore (persiste mesmo após limpar o navegador)
+    let fpUsed = false;
+    try {
+      const fpSnap = await db.collection('trialDevices').doc(fp).get();
+      fpUsed = fpSnap.exists;
+    } catch(e) { /* fail open — não bloqueia por erro de rede */ }
+
+    if (fpUsed) {
+      localStorage.setItem('belle_trial_' + fp, '1');
+      await cred.user.delete().catch(() => {});
+      showError('Este dispositivo já utilizou o período de teste gratuito. Para continuar, contrate um plano em nosso site.');
+      if(btn){btn.disabled=false;btn.textContent='Criar conta';}
+      return;
+    }
+
     await db.collection('users').doc(cred.user.uid).collection('settings').doc('profile').set({
       salonName: name, pixKey: '', pixName: name.substring(0,25), pixCity: 'Cidade', professionalName: name.split(' ')[0]
     });
@@ -154,17 +213,32 @@ async function doRegister() {
     };
     if (refCode && refCode !== cred.user.uid) subData.referredBy = refCode;
     await db.collection('subscriptions').doc(cred.user.uid).set(subData);
+
+    // Registra fingerprint do dispositivo
+    try {
+      await db.collection('trialDevices').doc(fp).set({ uid: cred.user.uid, email, createdAt: now });
+      localStorage.setItem('belle_trial_' + fp, '1');
+    } catch(e) { /* não-fatal: conta criada mesmo se registro do dispositivo falhar */ }
+
     sessionStorage.removeItem('refCode');
-  } catch(e) { showError(friendly(e)); }
+  } catch(e) {
+    showError(friendly(e));
+    if(btn){btn.disabled=false;btn.textContent='Criar conta';}
+  }
 }
 
 async function doReset() {
   const email = document.getElementById('loginEmail').value.trim();
   if (!email) { showError('Digite seu e-mail para redefinir a senha.'); return; }
+  const lnk = document.querySelector('.link');
+  if(lnk){lnk.disabled=true;lnk.textContent='Enviando...';}
   try {
     await auth.sendPasswordResetEmail(email);
     showError('E-mail de redefinição enviado! Verifique sua caixa de entrada.', true);
   } catch(e) { showError(friendly(e)); }
+  finally {
+    if(lnk){lnk.disabled=false;lnk.textContent='Esqueci a senha';}
+  }
 }
 
 document.addEventListener('keydown', e => {

@@ -141,7 +141,7 @@ main{padding:36px 44px;overflow-x:hidden}
 @media(max-width:480px){
   .appt{padding:10px;gap:10px}
   .appt-actions{width:100%;justify-content:flex-end;padding-top:6px;border-top:1px solid var(--line)}
-  .icon-btn{width:36px;height:36px;font-size:14px}
+  .icon-btn{width:44px;height:44px;font-size:15px}
 }
 
 /* ====== FORMS ====== */
@@ -346,7 +346,7 @@ tr:hover td{background:var(--bg)}
           <div id="upcomingList"></div>
         </div>
         <div class="card">
-          <div class="card-title">Aniversariantes do mês</div>
+          <div class="card-title">Aniversariantes de hoje</div>
           <div id="bdayList"></div>
         </div>
       </div>
@@ -366,9 +366,9 @@ tr:hover td{background:var(--bg)}
           <div class="cal-head">
             <div class="cal-month" id="calMonth"></div>
             <div class="cal-nav">
-              <button class="icon-btn" onclick="changeMonth(-1)">‹</button>
-              <button class="icon-btn" onclick="goToday()">•</button>
-              <button class="icon-btn" onclick="changeMonth(1)">›</button>
+              <button class="icon-btn" onclick="changeMonth(-1)" title="Mês anterior">‹</button>
+              <button class="icon-btn" onclick="goToday()" title="Hoje">•</button>
+              <button class="icon-btn" onclick="changeMonth(1)" title="Próximo mês">›</button>
             </div>
           </div>
           <div class="cal-grid" id="calGrid"></div>
@@ -584,6 +584,7 @@ let settings = { salonName: 'Belle·Agenda', professionalName: 'profissional', p
 let editingId = { appt: null, client: null, service: null };
 let calDate = new Date();
 let selectedDay = new Date().toISOString().split('T')[0];
+let _lastRenderedDay = '';
 
 // ============ AUTH ============
 const ADMIN_EMAIL = 'sm.servicosetecnologia@gmail.com';
@@ -662,6 +663,7 @@ auth.onAuthStateChanged(async user => {
   }
   document.getElementById('loadingOverlay').classList.add('hidden');
   renderAll();
+  _lastRenderedDay = new Date().toISOString().split('T')[0];
   db.collection('subscriptions').doc(user.uid).update({ lastLoginAt: Date.now() }).catch(() => {});
 });
 
@@ -760,14 +762,21 @@ function applySettings() {
   document.getElementById('greetName').textContent = settings.professionalName||'profissional';
 }
 async function saveSettings() {
-  settings.salonName = document.getElementById('cfgSalon').value.trim()||'Belle·Agenda';
-  settings.professionalName = document.getElementById('cfgProf').value.trim()||'profissional';
-  settings.pixKey = document.getElementById('cfgPixKey').value.trim();
-  settings.pixName = document.getElementById('cfgPixName').value.trim().substring(0,25);
-  settings.pixCity = document.getElementById('cfgPixCity').value.trim().substring(0,15);
-  await userCol('settings').doc('profile').set(settings);
-  applySettings();
-  toast('Configurações salvas ✓');
+  const btn=document.querySelector('#settings .btn-primary');
+  const orig=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    settings.salonName = document.getElementById('cfgSalon').value.trim()||'Belle·Agenda';
+    settings.professionalName = document.getElementById('cfgProf').value.trim()||'profissional';
+    settings.pixKey = document.getElementById('cfgPixKey').value.trim();
+    settings.pixName = document.getElementById('cfgPixName').value.trim().substring(0,25);
+    settings.pixCity = document.getElementById('cfgPixCity').value.trim().substring(0,15);
+    await userCol('settings').doc('profile').set(settings);
+    applySettings();
+    toast('Configurações salvas ✓');
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent=orig;}
+  }
 }
 
 // ============ PIX (EMV/BACEN) ============
@@ -807,9 +816,10 @@ function openPixModal(apptId) {
     <div class="pix-amount">${brl(s.price)}</div>
     <div class="pix-lbl">${esc(s.name)} · ${esc(c.name)}</div>
     <div id="pixQrDiv" style="margin:12px auto;text-align:center"></div>
-    <div class="pix-code-box" id="pixCodeBox" onclick="copyPix()" title="Clique para copiar">${payload}</div>
+    <div class="pix-code-box" id="pixCodeBox" onclick="copyPix()" title="Clique para copiar"></div>
     <p style="font-size:11px;color:var(--ink-soft);margin-top:6px">Clique no código para copiar</p>
   </div>`;
+  document.getElementById('pixCodeBox').textContent=payload;
 
   // Gera QR Code com qrcode-generator (fallback: só exibe copia e cola)
   try {
@@ -899,28 +909,36 @@ async function saveAppt(){
   const date=document.getElementById('apptDate').value;
   const time=document.getElementById('apptTime').value;
   const notes=document.getElementById('apptNotes').value;
-  if(!clientId||!serviceId||!date||!time){toast('Preencha todos os campos');return;}
-  const isNew=!editingId.appt;
-  let savedId=editingId.appt;
-  if(editingId.appt){
-    const data={clientId,serviceId,date,time,notes};
-    await userCol('appts').doc(editingId.appt).update(data);
-    Object.assign(state.appts.find(x=>x.id===editingId.appt),data);
-  } else {
-    const data={clientId,serviceId,date,time,notes,done:false,createdAt:Date.now()};
-    const ref=await userCol('appts').add(data);
-    savedId=ref.id;
-    state.appts.push({id:savedId,...data});
-  }
-  closeModal('apptModal');
-  renderAll();
-  toast(isNew?'Agendamento criado ✓':'Agendamento atualizado ✓');
-  if(isNew){ logEvent('appt_created');
-    // Abre WhatsApp se cliente tem telefone
-    const c=state.clients.find(x=>x.id===clientId);
-    if(c&&c.phone) setTimeout(()=>sendWhatsApp(savedId),500);
-    // Sempre mostra modal PIX (com ou sem chave configurada)
-    setTimeout(()=>openPixModal(savedId),900);
+  if(!clientId){toast('Selecione um cliente');return;}
+  if(!serviceId){toast('Selecione um serviço');return;}
+  if(!date){toast('Informe a data');return;}
+  if(!time){toast('Informe o horário');return;}
+  const btn=document.querySelector('#apptModal .btn-primary');
+  const orig=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    const isNew=!editingId.appt;
+    let savedId=editingId.appt;
+    if(editingId.appt){
+      const data={clientId,serviceId,date,time,notes};
+      await userCol('appts').doc(editingId.appt).update(data);
+      Object.assign(state.appts.find(x=>x.id===editingId.appt),data);
+    } else {
+      const data={clientId,serviceId,date,time,notes,done:false,createdAt:Date.now()};
+      const ref=await userCol('appts').add(data);
+      savedId=ref.id;
+      state.appts.push({id:savedId,...data});
+    }
+    closeModal('apptModal');
+    renderAll();
+    toast(isNew?'Agendamento criado ✓':'Agendamento atualizado ✓');
+    if(isNew){ logEvent('appt_created');
+      const c=state.clients.find(x=>x.id===clientId);
+      if(c&&c.phone) setTimeout(()=>sendWhatsApp(savedId),500);
+      setTimeout(()=>openPixModal(savedId),900);
+    }
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent=orig;}
   }
 }
 async function delAppt(id){
@@ -950,10 +968,17 @@ function openClient(id){
 async function saveClient(){
   const name=document.getElementById('cliName').value.trim();
   if(!name){toast('Informe o nome');return;}
-  const data={name,phone:document.getElementById('cliPhone').value.replace(/\D/g,''),bday:document.getElementById('cliBday').value,email:document.getElementById('cliEmail').value,notes:document.getElementById('cliNotes').value};
-  if(editingId.client){await userCol('clients').doc(editingId.client).update(data);Object.assign(state.clients.find(x=>x.id===editingId.client),data);}
-  else{const ref=await userCol('clients').add({...data,createdAt:Date.now()});state.clients.push({id:ref.id,...data});logEvent('client_added');}
-  closeModal('clientModal');renderAll();toast('Cliente salvo ✓');
+  const btn=document.querySelector('#clientModal .btn-primary');
+  const orig=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    const data={name,phone:document.getElementById('cliPhone').value.replace(/\D/g,''),bday:document.getElementById('cliBday').value,email:document.getElementById('cliEmail').value,notes:document.getElementById('cliNotes').value};
+    if(editingId.client){await userCol('clients').doc(editingId.client).update(data);Object.assign(state.clients.find(x=>x.id===editingId.client),data);}
+    else{const ref=await userCol('clients').add({...data,createdAt:Date.now()});state.clients.push({id:ref.id,...data});logEvent('client_added');}
+    closeModal('clientModal');renderAll();toast('Cliente salvo ✓');
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent=orig;}
+  }
 }
 async function delClient(id){
   if(!confirm('Excluir este cliente?'))return;
@@ -972,11 +997,19 @@ function openService(id){
 async function saveService(){
   const name=document.getElementById('svcName').value.trim();
   const price=parseFloat(document.getElementById('svcPrice').value);
-  if(!name||!price){toast('Preencha nome e preço');return;}
-  const data={name,price,duration:parseInt(document.getElementById('svcDur').value)||60,commission:parseFloat(document.getElementById('svcComm').value)||0};
-  if(editingId.service){await userCol('services').doc(editingId.service).update(data);Object.assign(state.services.find(x=>x.id===editingId.service),data);}
-  else{const ref=await userCol('services').add({...data,createdAt:Date.now()});state.services.push({id:ref.id,...data});}
-  closeModal('serviceModal');renderAll();toast('Serviço salvo ✓');
+  if(!name){toast('Informe o nome do serviço');return;}
+  if(!price){toast('Informe o preço do serviço');return;}
+  const btn=document.querySelector('#serviceModal .btn-primary');
+  const orig=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    const data={name,price,duration:parseInt(document.getElementById('svcDur').value)||60,commission:parseFloat(document.getElementById('svcComm').value)||0};
+    if(editingId.service){await userCol('services').doc(editingId.service).update(data);Object.assign(state.services.find(x=>x.id===editingId.service),data);}
+    else{const ref=await userCol('services').add({...data,createdAt:Date.now()});state.services.push({id:ref.id,...data});}
+    closeModal('serviceModal');renderAll();toast('Serviço salvo ✓');
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent=orig;}
+  }
 }
 async function delService(id){
   const linked=state.appts.filter(a=>a.serviceId===id).length;
@@ -1019,15 +1052,17 @@ function renderDash(){
   const we=new Date(now.getFullYear(),now.getMonth(),now.getDate()-now.getDay()+6,23,59,59);
   document.getElementById('dashWeek').textContent=state.appts.filter(a=>{const d=new Date(a.date+'T12:00');return d>=ws&&d<=we;}).length;
   const month=now.toISOString().slice(0,7);
-  document.getElementById('dashRev').textContent=brl(state.appts.filter(a=>a.date.startsWith(month)).reduce((s,a)=>{const svc=state.services.find(x=>x.id===a.serviceId);return s+(svc?svc.price:0);},0));
+  const monthAppts=state.appts.filter(a=>a.date.startsWith(month));
+  const monthRev=monthAppts.reduce((s,a)=>{const svc=state.services.find(x=>x.id===a.serviceId);return s+(svc?svc.price:0);},0);
+  document.getElementById('dashRev').textContent=monthAppts.length?brl(monthRev):'—';
   document.getElementById('dashClients').textContent=state.clients.length;
   document.getElementById('todayDate').textContent='· '+now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('greetName').textContent=settings.professionalName||'profissional';
   const upcoming=state.appts.filter(a=>a.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
   document.getElementById('upcomingList').innerHTML=upcoming.length?upcoming.map(renderApptCard).join(''):'<div class="empty-state"><h4>Nenhum agendamento</h4><p>Toque no + para criar o primeiro</p></div>';
-  const tm=(now.getMonth()+1).toString().padStart(2,'0');
-  const bdays=state.clients.filter(c=>c.bday&&c.bday.slice(5,7)===tm);
-  document.getElementById('bdayList').innerHTML=bdays.length?bdays.map(c=>`<div class="appt"><div class="appt-time"><div class="h">${c.bday.split('-')[2]}</div><div class="d">dia</div></div><div class="appt-info"><div class="name">${esc(c.name)}</div><div class="svc">🎂 Aniversariante</div></div>${c.phone?`<button class="icon-btn wa" onclick="wishBday('${c.id}')">💬</button>`:''}</div>`).join(''):'<div class="empty-state"><h4>Nenhum aniversariante</h4><p>Cadastre datas de nascimento</p></div>';
+  const tdStr=(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0');
+  const bdays=state.clients.filter(c=>c.bday&&c.bday.slice(5)===tdStr);
+  document.getElementById('bdayList').innerHTML=bdays.length?bdays.map(c=>`<div class="appt"><div class="appt-time"><div class="h">${c.bday.split('-')[2]}</div><div class="d">hoje</div></div><div class="appt-info"><div class="name">${esc(c.name)}</div><div class="svc">🎂 Aniversariante</div></div>${c.phone?`<button class="icon-btn wa" onclick="wishBday('${c.id}')">💬</button>`:''}</div>`).join(''):'<div class="empty-state"><p style="font-size:14px;padding:8px 0">Não há aniversariantes no dia.</p></div>';
 }
 
 function renderCalendar(){
@@ -1103,6 +1138,15 @@ function exportData(){
 }
 
 function renderAll(){renderDash();renderCalendar();renderClients();renderServices();renderReports();}
+
+// ============ DAILY AUTO-REFRESH ============
+function _checkDayRollover(){
+  if(!uid)return;
+  const d=new Date().toISOString().split('T')[0];
+  if(d!==_lastRenderedDay){_lastRenderedDay=d;renderDash();}
+}
+setInterval(_checkDayRollover,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)_checkDayRollover();});
 </script>
 </body>
 </html>

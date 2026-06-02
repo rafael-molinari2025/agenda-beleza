@@ -682,9 +682,19 @@ footer{background:var(--ink);color:rgba(255,255,255,.6);padding:40px 0}
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
+
+// Contador de visitas diárias — uma contagem por sessão, sem autenticação
+if (!sessionStorage.getItem('lv')) {
+  const _lvDate = new Date().toISOString().split('T')[0];
+  firebase.firestore().collection('landingViews').doc(_lvDate)
+    .set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true })
+    .then(() => sessionStorage.setItem('lv', '1'))
+    .catch(() => {});
+}
 
 // ⚠️ ATUALIZE com o seu número de WhatsApp (DDI 55 + DDD + número, sem espaços ou traços)
 const WHATSAPP = '5531990656645';
@@ -703,10 +713,11 @@ function contatoWhatsApp() {
   window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// Ativa link âncora do plano semestral direto via URL (?plano=semestral)
+// Scroll direto para o plano semestral via URL (?plano=semestral)
 const params = new URLSearchParams(location.search);
 if (params.get('plano') === 'semestral') {
-  document.getElementById('btn-semestral').click();
+  const el = document.getElementById('precos');
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 300);
 }
 </script>
 </body>

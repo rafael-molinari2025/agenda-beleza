@@ -197,6 +197,16 @@ tr:hover td{background:#FAFAFA}
       <div class="bar-chart" id="growthChart"></div>
     </div>
 
+    <!-- Visitas Landing Page -->
+    <p class="an-section-title">Visitas à Landing Page <span style="font-size:13px;font-weight:400;color:var(--ink-soft)">(sessões únicas)</span></p>
+    <div class="an-grid" style="grid-template-columns:1fr 1fr;margin-bottom:14px">
+      <div class="an-card accent"><div class="an-label">Hoje</div><div class="an-val" id="anLandingToday">—</div><div class="an-sub">sessões únicas</div></div>
+      <div class="an-card"><div class="an-label">Últimos 30 dias</div><div class="an-val" id="anLandingMonth">—</div><div class="an-sub">sessões únicas</div></div>
+    </div>
+    <div class="card" style="padding:24px 20px 16px;margin-bottom:28px">
+      <div class="bar-chart" id="landingChart"></div>
+    </div>
+
     <!-- Uso do app -->
     <p class="an-section-title">Uso do Aplicativo <span style="font-size:13px;font-weight:400;color:var(--ink-soft)">(acumulado desde a ativação)</span></p>
     <div class="an-grid-3">
@@ -490,15 +500,22 @@ function closeEdit() {
 }
 
 async function saveEdit() {
-  const status = document.getElementById('editStatus').value;
-  const expiryVal = document.getElementById('editExpiry').value;
-  const notes = document.getElementById('editNotes').value.trim();
-  const update = { status, notes, updatedAt: Date.now() };
-  if (expiryVal) update.expiresAt = new Date(expiryVal).getTime();
-  await db.collection('subscriptions').doc(editingUid).set(update, { merge: true });
-  toast('Assinatura atualizada');
-  closeEdit();
-  await loadSubs();
+  const btn = document.querySelector('#editModal .btn-primary');
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  try {
+    const status = document.getElementById('editStatus').value;
+    const expiryVal = document.getElementById('editExpiry').value;
+    const notes = document.getElementById('editNotes').value.trim();
+    const update = { status, notes, updatedAt: Date.now() };
+    if (expiryVal) update.expiresAt = new Date(expiryVal).getTime();
+    await db.collection('subscriptions').doc(editingUid).set(update, { merge: true });
+    toast('Assinatura atualizada');
+    closeEdit();
+    await loadSubs();
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = orig; }
+  }
 }
 
 function showAdminTab(tab) {
@@ -553,6 +570,48 @@ async function loadAnalytics() {
       document.getElementById(id).textContent = '—';
     });
   }
+
+  // Visitas à landing page (últimos 30 dias, via Firestore)
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 29);
+    const startStr = startDate.toISOString().split('T')[0];
+    const viewsSnap = await db.collection('landingViews')
+      .where(firebase.firestore.FieldPath.documentId(), '>=', startStr)
+      .get();
+    const viewsMap = {};
+    let total30 = 0;
+    viewsSnap.docs.forEach(d => {
+      viewsMap[d.id] = d.data().count || 0;
+      total30 += viewsMap[d.id];
+    });
+    document.getElementById('anLandingToday').textContent = (viewsMap[todayStr] || 0).toLocaleString('pt-BR');
+    document.getElementById('anLandingMonth').textContent = total30.toLocaleString('pt-BR');
+    renderLandingChart(viewsMap);
+  } catch(e) {
+    ['anLandingToday','anLandingMonth'].forEach(id => document.getElementById(id).textContent = '—');
+  }
+}
+
+function renderLandingChart(viewsMap) {
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    days.push({
+      label: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+      count: viewsMap[dateStr] || 0
+    });
+  }
+  const max = Math.max(...days.map(d => d.count), 1);
+  const chart = document.getElementById('landingChart');
+  chart.innerHTML = days.map((d, i) => `
+    <div class="bar-wrap">
+      <div class="bar-val">${d.count > 0 ? d.count : ''}</div>
+      <div class="bar${i === 13 ? '' : ' secondary'}" style="height:${Math.round((d.count/max)*140)+4}px"></div>
+      <div class="bar-lbl">${d.label}</div>
+    </div>`).join('');
 }
 
 function renderGrowthChart() {

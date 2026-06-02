@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="30%" y2="100%">
+      <stop offset="0%" style="stop-color:#C9376C"/>
+      <stop offset="100%" style="stop-color:#7B1D42"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#FDF0F4"/>
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#C9376C"/>
+      <stop offset="100%" style="stop-color:#A82959"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="20" stdDeviation="40" flood-color="#2A1F2E" flood-opacity="0.3"/>
+    </filter>
+    <filter id="phoneShadow">
+      <feDropShadow dx="0" dy="24" stdDeviation="36" flood-color="#2A1F2E" flood-opacity="0.35"/>
+    </filter>
+    <filter id="btnGlow">
+      <feDropShadow dx="0" dy="8" stdDeviation="18" flood-color="#C9376C" flood-opacity="0.45"/>
+    </filter>
+    <clipPath id="screenClip">
+      <rect x="342" y="672" width="396" height="652" rx="14"/>
+    </clipPath>
+  </defs>
+
+  <!-- Fundo -->
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+
+  <!-- Círculos decorativos -->
+  <circle cx="0" cy="200" r="320" fill="white" opacity="0.04"/>
+  <circle cx="1080" cy="400" r="280" fill="white" opacity="0.05"/>
+  <circle cx="100" cy="1600" r="350" fill="white" opacity="0.04"/>
+  <circle cx="980" cy="1750" r="280" fill="white" opacity="0.04"/>
+
+  <!-- ===== BLOCO TOPO ===== -->
+  <!-- Logo -->
+  <text x="540" y="160" font-family="Georgia, serif" font-size="52" fill="white" text-anchor="middle" letter-spacing="-1" opacity="0.95">Belle<tspan font-style="italic">·</tspan>Agenda</text>
+  <text x="540" y="196" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.55)" text-anchor="middle" letter-spacing="4">BELEZA &amp; SAÚDE</text>
+
+  <!-- Headline topo -->
+  <text x="540" y="300" font-family="Georgia, serif" font-size="80" fill="white" text-anchor="middle" letter-spacing="-2">Sua agenda</text>
+  <text x="540" y="390" font-family="Georgia, serif" font-size="80" fill="white" text-anchor="middle" letter-spacing="-2">de beleza</text>
+  <text x="540" y="488" font-family="Georgia, serif" font-size="80" fill="#FDE68A" text-anchor="middle" letter-spacing="-2" font-style="italic">no celular.</text>
+
+  <!-- ===== CELULAR MOCKUP ===== -->
+  <!-- Corpo do celular -->
+  <rect x="316" y="556" width="448" height="760" rx="52" fill="#1A1225" filter="url(#phoneShadow)"/>
+  <!-- Tela -->
+  <rect x="342" y="584" width="396" height="704" rx="36" fill="white"/>
+  <!-- Notch/câmera -->
+  <rect x="472" y="576" width="136" height="22" rx="11" fill="#1A1225"/>
+  <circle cx="540" cy="587" r="7" fill="#0F0B18"/>
+
+  <!-- CONTEÚDO DA TELA -->
+  <!-- Header do app -->
+  <rect x="342" y="584" width="396" height="72" rx="36" fill="url(#screenGrad)" clip-path="url(#screenClip)"/>
+  <rect x="342" y="620" width="396" height="36" fill="url(#screenGrad)" clip-path="url(#screenClip)"/>
+  <text x="540" y="614" font-family="Georgia, serif" font-size="20" fill="white" text-anchor="middle" font-weight="bold">Belle·Agenda</text>
+  <text x="540" y="634" font-family="Arial, sans-serif" font-size="11" fill="rgba(255,255,255,0.75)" text-anchor="middle" letter-spacing="1">PAINEL</text>
+
+  <!-- Cards de stats -->
+  <rect x="356" y="672" width="176" height="86" rx="12" fill="#FAF7F4"/>
+  <text x="444" y="698" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E" text-anchor="middle" letter-spacing="1">HOJE</text>
+  <text x="444" y="740" font-family="Georgia, serif" font-size="42" fill="#2A1F2E" text-anchor="middle">4</text>
+  <text x="444" y="754" font-family="Arial, sans-serif" font-size="10" fill="#6B5B6E" text-anchor="middle">agendamentos</text>
+
+  <rect x="544" y="672" width="180" height="86" rx="12" fill="#FEF3C7"/>
+  <text x="634" y="698" font-family="Arial, sans-serif" font-size="11" fill="#92400E" text-anchor="middle" letter-spacing="1">MÊS</text>
+  <text x="634" y="736" font-family="Georgia, serif" font-size="32" fill="#92400E" text-anchor="middle">R$2.400</text>
+  <text x="634" y="754" font-family="Arial, sans-serif" font-size="10" fill="#92400E" text-anchor="middle">faturamento</text>
+
+  <!-- Agendamentos -->
+  <text x="370" y="790" font-family="Arial, sans-serif" font-size="12" fill="#6B5B6E" font-weight="600" letter-spacing="1.5">HOJE</text>
+
+  <rect x="356" y="800" width="368" height="60" rx="10" fill="#FAF7F4"/>
+  <rect x="362" y="812" width="5" height="36" rx="3" fill="#C9376C"/>
+  <text x="378" y="826" font-family="Arial, sans-serif" font-size="13" fill="#2A1F2E" font-weight="600">09:00 · Ana Lima</text>
+  <text x="378" y="844" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E">Corte Feminino · R$ 80</text>
+  <text x="706" y="826" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E" text-anchor="end">WhatsApp ›</text>
+
+  <rect x="356" y="870" width="368" height="60" rx="10" fill="#FAF7F4"/>
+  <rect x="362" y="882" width="5" height="36" rx="3" fill="#B8956A"/>
+  <text x="378" y="896" font-family="Arial, sans-serif" font-size="13" fill="#2A1F2E" font-weight="600">11:00 · Carla Souza</text>
+  <text x="378" y="914" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E">Escova Progressiva · R$ 120</text>
+  <text x="706" y="896" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E" text-anchor="end">WhatsApp ›</text>
+
+  <rect x="356" y="940" width="368" height="60" rx="10" fill="#FAF7F4"/>
+  <rect x="362" y="952" width="5" height="36" rx="3" fill="#8DA88E"/>
+  <text x="378" y="966" font-family="Arial, sans-serif" font-size="13" fill="#2A1F2E" font-weight="600">14:00 · Julia Matos</text>
+  <text x="378" y="984" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E">Manicure · R$ 45</text>
+  <text x="706" y="966" font-family="Arial, sans-serif" font-size="11" fill="#6B5B6E" text-anchor="end">PIX ›</text>
+
+  <!-- Botão + novo agendamento -->
+  <rect x="356" y="1016" width="368" height="48" rx="24" fill="#C9376C"/>
+  <text x="540" y="1046" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle" font-weight="700">+ Novo agendamento</text>
+
+  <!-- Nav bottom simulada -->
+  <rect x="342" y="1256" width="396" height="32" fill="#FAF7F4" clip-path="url(#screenClip)"/>
+  <text x="398" y="1277" font-family="Arial, sans-serif" font-size="10" fill="#C9376C" text-anchor="middle">Painel</text>
+  <text x="468" y="1277" font-family="Arial, sans-serif" font-size="10" fill="#6B5B6E" text-anchor="middle">Agenda</text>
+  <text x="540" y="1277" font-family="Arial, sans-serif" font-size="10" fill="#6B5B6E" text-anchor="middle">Clientes</text>
+  <text x="612" y="1277" font-family="Arial, sans-serif" font-size="10" fill="#6B5B6E" text-anchor="middle">Serviços</text>
+  <text x="682" y="1277" font-family="Arial, sans-serif" font-size="10" fill="#6B5B6E" text-anchor="middle">Config.</text>
+
+  <!-- Botão home do celular -->
+  <rect x="478" y="1300" width="124" height="6" rx="3" fill="#1A1225" opacity="0.3"/>
+
+  <!-- ===== BLOCO INFERIOR ===== -->
+  <!-- Card de benefícios -->
+  <rect x="60" y="1380" width="960" height="300" rx="32" fill="white" filter="url(#shadow)" opacity="0.96"/>
+
+  <!-- Benefícios em grid -->
+  <text x="180" y="1440" font-family="Arial, sans-serif" font-size="28" fill="#C9376C" text-anchor="middle">📅</text>
+  <text x="180" y="1468" font-family="Arial, sans-serif" font-size="15" fill="#2A1F2E" text-anchor="middle" font-weight="700">Agenda visual</text>
+  <text x="180" y="1488" font-family="Arial, sans-serif" font-size="13" fill="#6B5B6E" text-anchor="middle">por dia</text>
+
+  <text x="380" y="1440" font-family="Arial, sans-serif" font-size="28" fill="#C9376C" text-anchor="middle">💬</text>
+  <text x="380" y="1468" font-family="Arial, sans-serif" font-size="15" fill="#2A1F2E" text-anchor="middle" font-weight="700">WhatsApp</text>
+  <text x="380" y="1488" font-family="Arial, sans-serif" font-size="13" fill="#6B5B6E" text-anchor="middle">automático</text>
+
+  <text x="580" y="1440" font-family="Arial, sans-serif" font-size="28" fill="#C9376C" text-anchor="middle">💳</text>
+  <text x="580" y="1468" font-family="Arial, sans-serif" font-size="15" fill="#2A1F2E" text-anchor="middle" font-weight="700">PIX QR Code</text>
+  <text x="580" y="1488" font-family="Arial, sans-serif" font-size="13" fill="#6B5B6E" text-anchor="middle">na hora</text>
+
+  <text x="780" y="1440" font-family="Arial, sans-serif" font-size="28" fill="#C9376C" text-anchor="middle">📊</text>
+  <text x="780" y="1468" font-family="Arial, sans-serif" font-size="15" fill="#2A1F2E" text-anchor="middle" font-weight="700">Relatórios</text>
+  <text x="780" y="1488" font-family="Arial, sans-serif" font-size="13" fill="#6B5B6E" text-anchor="middle">mensais</text>
+
+  <!-- Divisor interno -->
+  <line x1="100" y1="1510" x2="980" y2="1510" stroke="#EDE5E3" stroke-width="1.5"/>
+
+  <!-- Trial badge -->
+  <rect x="340" y="1526" width="400" height="44" rx="22" fill="#D1FAE5"/>
+  <text x="540" y="1554" font-family="Arial, sans-serif" font-size="17" fill="#065F46" text-anchor="middle" font-weight="700">✓  15 dias de teste 100% gratuito</text>
+
+  <!-- Nenhum app -->
+  <text x="540" y="1606" font-family="Arial, sans-serif" font-size="15" fill="#6B5B6E" text-anchor="middle">Funciona no celular · Sem baixar aplicativo</text>
+
+  <text x="540" y="1632" font-family="Arial, sans-serif" font-size="15" fill="#6B5B6E" text-anchor="middle">Sem cartão de crédito</text>
+
+  <!-- CTA final -->
+  <rect x="140" y="1708" width="800" height="76" rx="38" fill="#C9376C" filter="url(#btnGlow)"/>
+  <text x="540" y="1744" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" font-weight="700">Crie sua conta grátis agora</text>
+  <text x="540" y="1768" font-family="Arial, sans-serif" font-size="15" fill="rgba(255,255,255,0.8)" text-anchor="middle">bella-agenda-226f0.web.app</text>
+
+  <!-- Swipe up hint -->
+  <text x="540" y="1848" font-family="Arial, sans-serif" font-size="13" fill="rgba(255,255,255,0.45)" text-anchor="middle" letter-spacing="2">↑  ACESSE PELO LINK NA BIO</text>
+</svg>
