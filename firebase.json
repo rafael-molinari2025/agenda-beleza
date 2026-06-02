@@ -16,10 +16,19 @@
       ".claude/**",
       "node_modules/**"
     ],
+    "redirects": [
+      { "source": "/landing.html", "destination": "/landing", "type": 301 },
+      { "source": "/login.html",   "destination": "/login",   "type": 301 },
+      { "source": "/app.html",     "destination": "/app",     "type": 301 },
+      { "source": "/admin.html",   "destination": "/admin",   "type": 301 },
+      { "source": "/manual.html",  "destination": "/manual",  "type": 301 }
+    ],
     "rewrites": [
-      { "source": "/app", "destination": "/app.html" },
-      { "source": "/manual", "destination": "/manual.html" },
-      { "source": "/admin", "destination": "/admin.html" }
+      { "source": "/landing", "destination": "/landing.html" },
+      { "source": "/login",   "destination": "/login.html" },
+      { "source": "/app",     "destination": "/app.html" },
+      { "source": "/manual",  "destination": "/manual.html" },
+      { "source": "/admin",   "destination": "/admin.html" }
     ],
     "headers": [
       {
